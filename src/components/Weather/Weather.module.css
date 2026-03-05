@@ -1,0 +1,377 @@
+/* Weather.module.css */
+
+.container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: 'DM Sans', sans-serif;
+  direction: rtl;
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+
+
+
+.geoBtn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.15s;
+  line-height: 1.4;
+}
+
+.geoBtn:hover { border-color: var(--accent); }
+.geoBtn:disabled { opacity: 0.5; cursor: default; } 
+
+/* ── Search ── */
+.searchRow {
+  display: flex;
+  gap: 6px;
+}
+
+.input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  transition: border-color 0.15s;
+  direction: rtl;
+}
+
+.input:focus { border-color: var(--accent); }
+
+/* .searchBtn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+
+.searchBtn:hover { opacity: 0.85; } */
+
+
+.searchBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  color: var(--accent);
+  background: var(--accent-bg);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.searchBtn:hover { border-color: var(--accent); }
+.searchBtn:disabled { opacity: 0.5; cursor: default; }
+
+.cancelBtn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text2);
+  cursor: pointer;
+}
+
+/* ── Favorites ── */
+.favorites {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.favGroup {
+  display: flex;
+  align-items: center;
+}
+
+.favBtn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 99px 0 0 99px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.favBtn.activeFav {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.removeFav {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-left: none;
+  border-radius: 0 99px 99px 0;
+  padding: 3px 7px;
+  font-size: 12px;
+  color: var(--text3);
+  cursor: pointer;
+  transition: all 0.15s;
+  line-height: 1.4;
+}
+
+.removeFav:hover { color: #ef4444; background: #fee2e2; }
+
+.addFavRow {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.addFavBtn {
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: 99px;
+  padding: 3px 12px;
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text3);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.addFavBtn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── States ── */
+.empty {
+  text-align: center;
+  color: var(--text3);
+  font-size: 13px;
+  padding: 20px;
+}
+
+.errorMsg {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+/* ── Current Weather ── */
+.current {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.currentTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.cityName {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.conditionText {
+  font-size: 12px;
+  color: var(--text2);
+  margin-top: 2px;
+}
+
+.weatherIcon {
+  width: 56px;
+  height: 56px;
+}
+
+.tempRow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.temp {
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  line-height: 1;
+}
+
+.feels {
+  font-size: 12px;
+  color: var(--text3);
+}
+
+/* Stats grid */
+.statsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statIcon { font-size: 14px; }
+
+.statVal {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+}
+
+.statLabel {
+  font-size: 10px;
+  color: var(--text3);
+}
+
+/* Sea state */
+.seaRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.seaLabel {
+  font-weight: 700;
+  color: var(--sea-color, var(--text));
+}
+
+.seaNote {
+  font-size: 10px;
+  color: var(--text3);
+}
+
+/* ── Forecast ── */
+.forecastTitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.forecast {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.forecastDay {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.dayName {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  width: 60px;
+  flex-shrink: 0;
+}
+
+.forecastIcon {
+  width: 28px;
+  height: 28px;
+}
+
+.forecastTemps {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.maxTemp {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+}
+
+.minTemp {
+  font-size: 13px;
+  color: var(--text3);
+  font-family: 'DM Mono', monospace;
+}
+
+.rain {
+  font-size: 11px;
+  color: #3b82f6;
+  white-space: nowrap;
+}
+
+/* ── Astro ── */
+.astro {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text3);
+  padding: 0 2px;
+}

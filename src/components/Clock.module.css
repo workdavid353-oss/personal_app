@@ -1,0 +1,43 @@
+.clock {
+  display: flex;
+  /* flex-direction: column; */
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.time {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  font-family: 'DM Mono', monospace;
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.colon {
+  opacity: 0.4;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 0.1; }
+}
+
+.seconds {
+  font-size: 0.45em;
+  color: var(--text3);
+  align-self: flex-end;
+  margin-bottom: 0.15em;
+  margin-right: 4px;
+}
+
+.dates {
+  margin-top: 0.5em;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}

@@ -1,0 +1,287 @@
+/* src/components/Notes/Notes.module.css */
+
+/* ─── Container ──────────────────────────────────────────────────────────── */
+.notesContainer {
+  /* display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden; */
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-family: 'DM Sans', sans-serif;
+  direction: rtl;
+}
+
+/* ─── Toolbar ─────────────────────────────────────────────────────────────── */
+.notesToolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.notesLabel {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  flex: 1;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.errorBadge {
+  font-size: 11px;
+  color: #ef4444;
+  background: #fee2e2;
+  padding: 2px 7px;
+  border-radius: 99px;
+}
+
+.addNoteBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  color: var(--accent);
+  background: var(--accent-bg);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.addNoteBtn:hover { border-color: var(--accent); }
+.addNoteBtn:disabled { opacity: 0.5; cursor: default; }
+
+/* ─── List ────────────────────────────────────────────────────────────────── */
+.notesList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.notesList::-webkit-scrollbar { width: 4px; }
+.notesList::-webkit-scrollbar-track { background: transparent; }
+.notesList::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ─── Note Item ───────────────────────────────────────────────────────────── */
+.noteItem {
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  border-left: 3px solid;
+  background: var(--surface);
+  overflow: hidden;
+  transition: box-shadow 0.15s;
+  cursor: default;
+}
+
+.noteItem:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+}
+
+.noteItem[draggable='true'] { cursor: grab; }
+.noteItem[draggable='true']:active { cursor: grabbing; }
+
+/* ─── Note Header ─────────────────────────────────────────────────────────── */
+.noteItemHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 8px 7px 6px;
+  gap: 4px;
+}
+
+.noteItemLeft {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.noteItemRight {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.grip {
+  color: var(--text3);
+  flex-shrink: 0;
+  cursor: grab;
+}
+
+/* ─── Color dot ───────────────────────────────────────────────────────────── */
+.colorDotWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.colorDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0,0,0,0.18);
+  cursor: pointer;
+  transition: transform 0.1s;
+  padding: 0;
+}
+
+.colorDot:hover { transform: scale(1.2); }
+
+.colorDropdown {
+  position: absolute;
+  top: 20px;
+  left: 0;
+  display: flex;
+  gap: 5px;
+  padding: 6px 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  z-index: 50;
+}
+
+.colorOption {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0,0,0,0.15);
+  cursor: pointer;
+  transition: transform 0.1s;
+  padding: 0;
+}
+
+.colorOption:hover { transform: scale(1.15); }
+.activeColor { border-color: rgba(0,0,0,0.45); transform: scale(1.15); }
+
+/* ─── Title input ─────────────────────────────────────────────────────────── */
+.noteTitleInput {
+  flex: 1;
+  min-width: 0;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.noteTitleInput::placeholder {
+  color: var(--text3);
+  font-weight: 400;
+}
+
+/* ─── Icon buttons ────────────────────────────────────────────────────────── */
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: none;
+  border-radius: 4px;
+  color: var(--text3);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  opacity: 0;
+}
+
+.noteItem:hover .iconBtn { opacity: 1; }
+
+.iconBtn:hover {
+  color: var(--text);
+  background: var(--surface2);
+}
+
+.iconBtn:disabled {
+  opacity: 0.3 !important;
+  cursor: default;
+}
+
+.copied {
+  color: #22c55e !important;
+  opacity: 1 !important;
+}
+
+.deleteBtn:hover {
+  color: #ef4444 !important;
+  background: #fee2e2 !important;
+}
+
+/* ─── Textarea ────────────────────────────────────────────────────────────── */
+.noteTextarea {
+  display: block;
+  width: 100%;
+  min-height: 70px;
+  max-height: 200px;
+  resize: vertical;
+  border: none;
+  border-top: 1px solid var(--border);
+  outline: none;
+  background: transparent;
+  padding: 8px 10px 8px 14px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text2);
+  box-sizing: border-box;
+}
+
+.noteTextarea::placeholder {
+  color: var(--text3);
+  font-family: 'DM Sans', sans-serif;
+  font-style: italic;
+}
+
+/* ─── Empty state ─────────────────────────────────────────────────────────── */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px 0;
+  color: var(--text3);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  user-select: none;
+}
+
+.emptyState button {
+  font-size: 13px;
+  color: var(--accent);
+  background: var(--accent-bg);
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ─── Spin ────────────────────────────────────────────────────────────────── */
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
