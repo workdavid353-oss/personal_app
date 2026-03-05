@@ -4,7 +4,6 @@ import { Navigate } from 'react-router-dom'
 import { Mail, Lock, Eye, EyeOff, LogIn, UserPlus } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { useTheme } from '../context/ThemeContext'
 import { ThemeToggle } from '../components/ThemeToggle'
 import styles from './LoginPage.module.css'
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import type { Todo } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
@@ -466,7 +466,7 @@ export default function Todos() {
             isDragOver={dragOverId === todo.id}
             dragHandleProps={{
               draggable: sortBy === 'order',
-              onDragStart: (e) => handleDragStart(todo.id),
+              onDragStart: () => handleDragStart(todo.id),
               onDragOver: (e) => handleDragOver(e, todo.id),
               onDrop: () => handleDrop(todo.id),
               onDragEnd: () => setDragOverId(null),

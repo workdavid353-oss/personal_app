@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import {
-  Pencil, Check, EyeOff, Eye, Trash2, Copy, KeyRound, User,
-  Plus, GripVertical, X, Link as LinkIcon, Menu
+  Pencil, Check, EyeOff, Eye, Trash2, KeyRound, User, GripVertical, X, Menu
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import type { table_links_group, table_links } from '../../lib/supabase'
