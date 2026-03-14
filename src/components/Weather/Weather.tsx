@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import styles from './Weather.module.css'
 
 // ─── Types ────────────────────────────────────────────────────
@@ -41,34 +42,36 @@ interface SavedLocation {
 // ─── Constants ───────────────────────────────────────────────
 const API_KEY = import.meta.env.VITE_WEATHER_API_KEY as string
 
-const DAYS_HE = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת']
-
-const WIND_DIR_HE: Record<string, string> = {
-  N:'צפון', NNE:'צפון-מזרח', NE:'צפון-מזרח', ENE:'מזרח-צפון',
-  E:'מזרח', ESE:'מזרח-דרום', SE:'דרום-מזרח', SSE:'דרום-מזרח',
-  S:'דרום', SSW:'דרום-מערב', SW:'דרום-מערב', WSW:'מערב-דרום',
-  W:'מערב', WNW:'מערב-צפון', NW:'צפון-מערב', NNW:'צפון-מערב',
-}
-
-// הערכת מצב הים לפי מהירות רוח (בופורט מפושט)
-function seaState(wind_kph: number): { label: string; color: string } {
-  if (wind_kph < 6)  return { label: 'ים שקט', color: '#22c55e' }
-  if (wind_kph < 12) return { label: 'ים קל', color: '#86efac' }
-  if (wind_kph < 20) return { label: 'ים קל-בינוני', color: '#fde047' }
-  if (wind_kph < 30) return { label: 'ים בינוני', color: '#fb923c' }
-  if (wind_kph < 40) return { label: 'ים סוער', color: '#f87171' }
-  return { label: 'ים סוער מאוד', color: '#dc2626' }
-}
-
-function getDayName(dateStr: string, index: number): string {
-  if (index === 0) return 'היום'
-  if (index === 1) return 'מחר'
-  const d = new Date(dateStr)
-  return DAYS_HE[d.getDay()]
-}
-
 // ─── Main Component ───────────────────────────────────────────
 export default function Weather() {
+  const { t } = useTranslation()
+
+  const DAYS = t('weather.days', { returnObjects: true }) as string[]
+
+  const WIND_DIR: Record<string, string> = {
+    N: t('weather.north'), NNE: t('weather.northeast'), NE: t('weather.northeast'), ENE: t('weather.northwest'),
+    E: t('weather.east'), ESE: t('weather.southeast'), SE: t('weather.southeast'), SSE: t('weather.southeast'),
+    S: t('weather.south'), SSW: t('weather.southwest'), SW: t('weather.southwest'), WSW: t('weather.southwest'),
+    W: t('weather.west'), WNW: t('weather.northwest'), NW: t('weather.northwest'), NNW: t('weather.northwest'),
+  }
+
+  // הערכת מצב הים לפי מהירות רוח (בופורט מפושט)
+  function seaState(wind_kph: number): { label: string; color: string } {
+    if (wind_kph < 6)  return { label: t('weather.calmSea'), color: '#22c55e' }
+    if (wind_kph < 12) return { label: t('weather.lightSea'), color: '#86efac' }
+    if (wind_kph < 20) return { label: t('weather.lightModerateSea'), color: '#fde047' }
+    if (wind_kph < 30) return { label: t('weather.moderateSea'), color: '#fb923c' }
+    if (wind_kph < 40) return { label: t('weather.roughSea'), color: '#f87171' }
+    return { label: t('weather.veryRoughSea'), color: '#dc2626' }
+  }
+
+  function getDayName(dateStr: string, index: number): string {
+    if (index === 0) return t('weather.today')
+    if (index === 1) return t('weather.tomorrow')
+    const d = new Date(dateStr)
+    return DAYS[d.getDay()]
+  }
+
   const [data, setData] = useState<WeatherData | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -94,7 +97,7 @@ export default function Weather() {
       )
       if (!res.ok) {
         const err = await res.json()
-        throw new Error(err.error?.message || 'שגיאה בטעינת נתונים')
+        throw new Error(err.error?.message || t('weather.errorLoading'))
       }
       const json: WeatherData = await res.json()
       setData(json)
@@ -110,7 +113,7 @@ export default function Weather() {
   // ── geolocation ──
   function fetchByLocation() {
     if (!navigator.geolocation) {
-      setError('הדפדפן לא תומך במיקום')
+      setError(t('weather.noGeolocation'))
       return
     }
     setGeoLoading(true)
@@ -121,7 +124,7 @@ export default function Weather() {
         setGeoLoading(false)
       },
       () => {
-        setError('לא ניתן לקבל מיקום — נסה ידנית')
+        setError(t('weather.cannotGetLocation'))
         setGeoLoading(false)
       }
     )
@@ -169,7 +172,7 @@ export default function Weather() {
         <button
           className={styles.geoBtn}
           onClick={fetchByLocation}
-          title="מיקום נוכחי"
+          title={t('weather.currentLocation')}
           disabled={geoLoading}
         >
           {geoLoading ? '...' : '📍'}
@@ -180,12 +183,12 @@ export default function Weather() {
       <div className={styles.searchRow}>
         <input
           className={styles.input}
-          placeholder="חפש עיר..."
+          placeholder={t('weather.searchPlaceholder')}
           value={query}
           onChange={e => setQuery(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') fetchWeather(query) }}
         />
-        <button className={styles.searchBtn} onClick={() => fetchWeather(query)}>חפש</button>
+        <button className={styles.searchBtn} onClick={() => fetchWeather(query)}>{t('common.search')}</button>
       </div>
 
       {/* ── Favorites ── */}
@@ -202,7 +205,7 @@ export default function Weather() {
               <button
                 className={styles.removeFav}
                 onClick={() => removeFavorite(fav.name)}
-                title="הסר מועדף"
+                title={t('weather.removeFavorite')}
               >×</button>
             </div>
           ))}
@@ -216,25 +219,25 @@ export default function Weather() {
             <>
               <input
                 className={styles.input}
-                placeholder={`שם תצוגה (ברירת מחדל: ${data.location.name})`}
+                placeholder={t('weather.displayNamePlaceholder', { name: data.location.name })}
                 value={newLabel}
                 onChange={e => setNewLabel(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') addFavorite() }}
                 autoFocus
               />
-              <button className={styles.searchBtn} onClick={addFavorite}>שמור</button>
-              <button className={styles.cancelBtn} onClick={() => setShowAddForm(false)}>ביטול</button>
+              <button className={styles.searchBtn} onClick={addFavorite}>{t('common.save')}</button>
+              <button className={styles.cancelBtn} onClick={() => setShowAddForm(false)}>{t('common.cancel')}</button>
             </>
           ) : (
             <button className={styles.addFavBtn} onClick={() => setShowAddForm(true)}>
-              ☆ הוסף למועדפים
+              {t('weather.addFavorite')}
             </button>
           )}
         </div>
       )}
 
       {/* ── States ── */}
-      {loading && <div className={styles.empty}>טוען...</div>}
+      {loading && <div className={styles.empty}>{t('common.loading')}</div>}
       {error && <div className={styles.errorMsg}>{error}</div>}
 
       {/* ── Main Weather ── */}
@@ -256,7 +259,7 @@ export default function Weather() {
 
             <div className={styles.tempRow}>
               <span className={styles.temp}>{Math.round(data.current.temp_c)}°</span>
-              <span className={styles.feels}>מרגיש כמו {Math.round(data.current.feelslike_c)}°</span>
+              <span className={styles.feels}>{t('weather.feelsLike', { temp: Math.round(data.current.feelslike_c) })}</span>
             </div>
 
             {/* Stats grid */}
@@ -264,22 +267,22 @@ export default function Weather() {
               <div className={styles.stat}>
                 <span className={styles.statIcon}>💧</span>
                 <span className={styles.statVal}>{data.current.humidity}%</span>
-                <span className={styles.statLabel}>לחות</span>
+                <span className={styles.statLabel}>{t('weather.humidity')}</span>
               </div>
               <div className={styles.stat}>
                 <span className={styles.statIcon}>💨</span>
-                <span className={styles.statVal}>{Math.round(data.current.wind_kph)} קמ"ש</span>
-                <span className={styles.statLabel}>{WIND_DIR_HE[data.current.wind_dir] || data.current.wind_dir}</span>
+                <span className={styles.statVal}>{Math.round(data.current.wind_kph)} {t('weather.kmh')}</span>
+                <span className={styles.statLabel}>{WIND_DIR[data.current.wind_dir] || data.current.wind_dir}</span>
               </div>
               <div className={styles.stat}>
                 <span className={styles.statIcon}>👁</span>
                 <span className={styles.statVal}>{data.current.vis_km} ק"מ</span>
-                <span className={styles.statLabel}>ראות</span>
+                <span className={styles.statLabel}>{t('weather.visibility')}</span>
               </div>
               <div className={styles.stat}>
                 <span className={styles.statIcon}>☀️</span>
                 <span className={styles.statVal}>UV {data.current.uv}</span>
-                <span className={styles.statLabel}>קרינה</span>
+                <span className={styles.statLabel}>{t('weather.uv')}</span>
               </div>
             </div>
 
@@ -288,13 +291,13 @@ export default function Weather() {
               <div className={styles.seaRow} style={{ '--sea-color': sea.color } as React.CSSProperties}>
                 <span>🌊</span>
                 <span className={styles.seaLabel}>{sea.label}</span>
-                <span className={styles.seaNote}>(לפי מהירות רוח)</span>
+                <span className={styles.seaNote}>{t('weather.seaByWind')}</span>
               </div>
             )}
           </div>
 
           {/* ── 5-day forecast ── */}
-          <div className={styles.forecastTitle}>תחזית 5 ימים</div>
+          <div className={styles.forecastTitle}>{t('weather.forecast')}</div>
           <div className={styles.forecast}>
             {data.forecast.forecastday.map((day, i) => (
               <div key={day.date} className={styles.forecastDay}>

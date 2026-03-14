@@ -12,7 +12,6 @@
   flex-direction: column;
   gap: 0;
   font-family: 'DM Sans', sans-serif;
-  direction: rtl;
   transition: width 0.2s ease, background var(--transition), border-color var(--transition);
 }
 
@@ -286,7 +285,6 @@
   color: var(--text3);
   cursor: pointer;
   width: 100%;
-  text-align: right;
   transition: all 0.15s;
   margin-top: 4px;
 }
@@ -335,7 +333,6 @@
   max-width: calc(100vw - 32px);
   box-shadow: 0 20px 60px rgba(0,0,0,0.2);
   animation: slideModal 0.15s ease;
-  direction: rtl;
   font-family: 'DM Sans', sans-serif;
 }
 

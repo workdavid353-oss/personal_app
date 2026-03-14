@@ -2,15 +2,19 @@
 import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { Mail, Lock, Eye, EyeOff, LogIn, UserPlus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { LangProvider, useLang } from '../context/LangContext'
 import { ThemeToggle } from '../components/ThemeToggle'
 import styles from './LoginPage.module.css'
 
 type Mode = 'login' | 'register'
 
-export default function LoginPage() {
+function LoginForm() {
   const { session } = useAuth()
+  const { t } = useTranslation()
+  const { lang, toggleLang } = useLang()
   const [mode, setMode] = useState<Mode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -21,14 +25,14 @@ export default function LoginPage() {
   const [forgotMode, setForgotMode] = useState(false)
 
   async function handleForgotPassword() {
-    if (!email.trim()) { setError('הכנס את האימייל שלך קודם'); return }
+    if (!email.trim()) { setError(t('login.enterEmailFirst')); return }
     setLoading(true)
     setError(null)
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     })
     if (error) setError(translateError(error.message))
-    else setSuccess('נשלח אימייל לאיפוס סיסמה — בדוק את תיבת הדואר!')
+    else setSuccess(t('login.resetEmailSent'))
     setLoading(false)
   }
 
@@ -47,7 +51,7 @@ export default function LoginPage() {
     } else {
       const { error } = await supabase.auth.signUp({ email, password })
       if (error) setError(translateError(error.message))
-      else setSuccess('נשלח אימייל אישור — בדוק את תיבת הדואר שלך!')
+      else setSuccess(t('login.confirmationSent'))
     }
     setLoading(false)
   }
@@ -63,16 +67,19 @@ export default function LoginPage() {
   }
 
   function translateError(msg: string): string {
-    if (msg.includes('Invalid login')) return 'אימייל או סיסמה שגויים'
-    if (msg.includes('Email not confirmed')) return 'האימייל לא אושר — בדוק את תיבת הדואר'
-    if (msg.includes('User already registered')) return 'המשתמש כבר קיים — התחבר במקום'
-    if (msg.includes('Password should be')) return 'הסיסמה חייבת להיות לפחות 6 תווים'
+    if (msg.includes('Invalid login')) return t('login.invalidCredentials')
+    if (msg.includes('Email not confirmed')) return t('login.emailNotConfirmed')
+    if (msg.includes('User already registered')) return t('login.userExists')
+    if (msg.includes('Password should be')) return t('login.passwordTooShort')
     return msg
   }
 
   return (
     <div className={styles.page}>
       <div className={styles.themeBtn}>
+        <button className={styles.langBtnLogin} onClick={toggleLang}>
+          {lang === 'he' ? 'EN' : 'HE'}
+        </button>
         <ThemeToggle />
       </div>
 
@@ -82,7 +89,7 @@ export default function LoginPage() {
           <div className={styles.logo}>◈</div>
           <h1 className={styles.title}>Dashboard</h1>
           <p className={styles.subtitle}>
-            {mode === 'login' ? 'ברוך הבא! התחבר לחשבון שלך' : 'צור חשבון חדש'}
+            {mode === 'login' ? t('login.welcomeBack') : t('login.createAccount')}
           </p>
         </div>
 
@@ -92,13 +99,13 @@ export default function LoginPage() {
             className={`${styles.tab} ${mode === 'login' ? styles.activeTab : ''}`}
             onClick={() => { setMode('login'); setError(null); setSuccess(null) }}
           >
-            <LogIn size={14} /> התחברות
+            <LogIn size={14} /> {t('login.loginTab')}
           </button>
           <button
             className={`${styles.tab} ${mode === 'register' ? styles.activeTab : ''}`}
             onClick={() => { setMode('register'); setError(null); setSuccess(null) }}
           >
-            <UserPlus size={14} /> הרשמה
+            <UserPlus size={14} /> {t('login.registerTab')}
           </button>
         </div>
 
@@ -106,7 +113,7 @@ export default function LoginPage() {
         <div className={styles.form}>
           {/* Email */}
           <div className={styles.field}>
-            <label className={styles.label}>אימייל</label>
+            <label className={styles.label}>{t('login.email')}</label>
             <div className={styles.inputWrap}>
               <Mail size={14} className={styles.inputIcon} />
               <input
@@ -126,13 +133,13 @@ export default function LoginPage() {
           {!forgotMode && (
           <div className={styles.field}>
             <div className={styles.passwordLabelRow}>
-              <label className={styles.label}>סיסמה</label>
+              <label className={styles.label}>{t('login.password')}</label>
               <button
                 type="button"
                 className={styles.forgotLink}
                 onClick={() => { setForgotMode(true); setError(null); setSuccess(null) }}
               >
-                שכחת סיסמה?
+                {t('login.forgotPassword')}
               </button>
             </div>
             <div className={styles.inputWrap}>
@@ -140,7 +147,7 @@ export default function LoginPage() {
               <input
                 className={styles.input}
                 type={showPass ? 'text' : 'password'}
-                placeholder={mode === 'register' ? 'לפחות 6 תווים' : '••••••••'}
+                placeholder={mode === 'register' ? t('login.minChars') : '••••••••'}
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSubmit()}
@@ -161,19 +168,19 @@ export default function LoginPage() {
           {/* Forgot password mode */}
           {forgotMode && (
             <div className={styles.forgotBox}>
-              <p className={styles.forgotDesc}>הכנס את האימייל שלך ונשלח לך קישור לאיפוס סיסמה.</p>
+              <p className={styles.forgotDesc}>{t('login.forgotDesc')}</p>
               <button
                 className={styles.submitBtn}
                 onClick={handleForgotPassword}
                 disabled={loading || !email.trim()}
               >
-                {loading ? '...' : 'שלח קישור איפוס'}
+                {loading ? '...' : t('login.sendReset')}
               </button>
               <button
                 className={styles.backLink}
                 onClick={() => { setForgotMode(false); setError(null); setSuccess(null) }}
               >
-                ← חזור להתחברות
+                {t('login.backToLogin')}
               </button>
             </div>
           )}
@@ -189,14 +196,14 @@ export default function LoginPage() {
             onClick={handleSubmit}
             disabled={loading || !email.trim() || !password.trim()}
           >
-            {loading ? '...' : mode === 'login' ? 'התחבר' : 'צור חשבון'}
+            {loading ? '...' : mode === 'login' ? t('login.signIn') : t('login.signUp')}
           </button>
           )}
 
           {/* Divider */}
           {!forgotMode && (
           <div className={styles.divider}>
-            <span>או</span>
+            <span>{t('login.or')}</span>
           </div>
           )}
 
@@ -213,11 +220,19 @@ export default function LoginPage() {
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
-            המשך עם Google
+            {t('login.continueGoogle')}
           </button>
           )}
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <LangProvider>
+      <LoginForm />
+    </LangProvider>
   )
 }

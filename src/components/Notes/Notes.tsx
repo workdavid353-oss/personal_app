@@ -1,11 +1,13 @@
 // src/components/Notes/Notes.tsx
 import { useRef } from 'react'
 import { Plus, Loader2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useNotes } from './useNotes'
 import NoteItem from './NoteItem'
 import styles from './Notes.module.css'
 
 export default function Notes() {
+  const { t } = useTranslation()
   const { notes, loading, error, addNote, updateNote, reorderNotes, deleteNote } = useNotes()
   const dragIndex = useRef<number | null>(null)
 
@@ -22,12 +24,12 @@ export default function Notes() {
       {/* Toolbar */}
       <div className={styles.notesToolbar}>
         <span className={styles.notesLabel}>Note</span>
-        {error && <span className={styles.errorBadge}>שגיאה</span>}
+        {error && <span className={styles.errorBadge}>{t('common.error')}</span>}
         <button className={styles.addNoteBtn} onClick={addNote} disabled={loading}>
           {loading
             ? <Loader2 size={14} className={styles.spin} />
             : <Plus size={14} />}
-          <span>חדש</span>
+          <span>{t('notes.new')}</span>
         </button>
       </div>
 
@@ -48,8 +50,8 @@ export default function Notes() {
 
         {notes.length === 0 && !loading && (
           <div className={styles.emptyState}>
-            <span>אין פתקים עדיין</span>
-            <button onClick={addNote}>צור פתק ראשון ✦</button>
+            <span>{t('notes.empty')}</span>
+            <button onClick={addNote}>{t('notes.createFirst')}</button>
           </div>
         )}
       </div>

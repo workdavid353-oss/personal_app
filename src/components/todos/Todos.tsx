@@ -1,26 +1,21 @@
 import { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
 import type { Todo } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import styles from './Todos.module.css'
 
 // ─── helpers ────────────────────────────────────────────────
-const PRIORITY_LABEL: Record<Todo['priority'], string> = {
-  high: 'גבוהה',
-  medium: 'בינונית',
-  low: 'נמוכה',
-}
-
 const PRIORITY_ORDER: Record<Todo['priority'], number> = {
   high: 0,
   medium: 1,
   low: 2,
 }
 
-function formatDate(dateStr: string | null): string {
+function formatDate(dateStr: string | null, locale: string): string {
   if (!dateStr) return ''
   const d = new Date(dateStr + 'T00:00:00')
-  return d.toLocaleDateString('he-IL', { day: 'numeric', month: 'short', year: 'numeric' })
+  return d.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 function isOverdue(dateStr: string | null): boolean {
@@ -36,6 +31,7 @@ interface AddTodoFormProps {
 }
 
 function AddTodoForm({ onAdd, existingTags, onClose }: AddTodoFormProps) {
+  const { t } = useTranslation()
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [priority, setPriority] = useState<Todo['priority']>('medium')
@@ -70,14 +66,14 @@ function AddTodoForm({ onAdd, existingTags, onClose }: AddTodoFormProps) {
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
       <div className={styles.formHeader}>
-        <span className={styles.formTitle}>משימה חדשה</span>
+        <span className={styles.formTitle}>{t('todos.newTask')}</span>
         <button type="button" className={styles.closeBtn} onClick={onClose}>✕</button>
       </div>
 
       <input
         ref={titleRef}
         className={styles.input}
-        placeholder="כותרת המשימה *"
+        placeholder={t('todos.titlePlaceholder')}
         value={title}
         onChange={e => setTitle(e.target.value)}
         required
@@ -85,7 +81,7 @@ function AddTodoForm({ onAdd, existingTags, onClose }: AddTodoFormProps) {
 
       <textarea
         className={styles.textarea}
-        placeholder="תוכן / תיאור (אופציונלי)"
+        placeholder={t('todos.contentPlaceholder')}
         value={content}
         onChange={e => setContent(e.target.value)}
         rows={3}
@@ -93,7 +89,7 @@ function AddTodoForm({ onAdd, existingTags, onClose }: AddTodoFormProps) {
 
       <div className={styles.formRow}>
         <div className={styles.formGroup}>
-          <label className={styles.label}>עדיפות</label>
+          <label className={styles.label}>{t('todos.priority')}</label>
           <div className={styles.priorityBtns}>
             {(['high', 'medium', 'low'] as Todo['priority'][]).map(p => (
               <button
@@ -102,14 +98,14 @@ function AddTodoForm({ onAdd, existingTags, onClose }: AddTodoFormProps) {
                 className={`${styles.priorityBtn} ${styles[p]} ${priority === p ? styles.active : ''}`}
                 onClick={() => setPriority(p)}
               >
-                {PRIORITY_LABEL[p]}
+                {t('todos.' + p)}
               </button>
             ))}
           </div>
         </div>
 
         <div className={styles.formGroup}>
-          <label className={styles.label}>תאריך יעד</label>
+          <label className={styles.label}>{t('todos.dueDate')}</label>
           <input
             type="date"
             className={styles.input}
@@ -120,11 +116,11 @@ function AddTodoForm({ onAdd, existingTags, onClose }: AddTodoFormProps) {
       </div>
 
       <div className={styles.formGroup}>
-        <label className={styles.label}>תגיות</label>
+        <label className={styles.label}>{t('todos.tags')}</label>
         <div className={styles.tagInputRow}>
           <input
             className={styles.input}
-            placeholder="הוסף תגית ולחץ Enter"
+            placeholder={t('todos.tagPlaceholder')}
             value={tagInput}
             onChange={e => setTagInput(e.target.value)}
             onKeyDown={e => {
@@ -150,9 +146,9 @@ function AddTodoForm({ onAdd, existingTags, onClose }: AddTodoFormProps) {
       </div>
 
       <div className={styles.formActions}>
-        <button type="button" className={styles.cancelBtn} onClick={onClose}>ביטול</button>
+        <button type="button" className={styles.cancelBtn} onClick={onClose}>{t('common.cancel')}</button>
         <button type="submit" className={styles.submitBtn} disabled={loading || !title.trim()}>
-          {loading ? '...' : 'הוסף משימה'}
+          {loading ? '...' : t('todos.addTask')}
         </button>
       </div>
     </form>
@@ -173,9 +169,11 @@ interface TodoItemProps {
     onDragEnd: () => void
   }
   isDragOver: boolean
+  locale: string
 }
 
-function TodoItem({ todo, onToggle, onDelete, onUpdate, dragHandleProps, isDragOver }: TodoItemProps) {
+function TodoItem({ todo, onToggle, onDelete, onUpdate, dragHandleProps, isDragOver, locale }: TodoItemProps) {
+  const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
   const [editing, setEditing] = useState(false)
   const [editTitle, setEditTitle] = useState(todo.title)
@@ -197,12 +195,12 @@ function TodoItem({ todo, onToggle, onDelete, onUpdate, dragHandleProps, isDragO
       {...dragHandleProps}
     >
       <div className={styles.itemMain}>
-        <div className={`${styles.dragHandle}`} title="גרור לסידור">⠿</div>
+        <div className={`${styles.dragHandle}`} title={t('todos.dragSort')}>⠿</div>
 
         <button
           className={`${styles.checkbox} ${todo.completed ? styles.checked : ''}`}
           onClick={() => onToggle(todo.id, todo.completed)}
-          aria-label="סמן כהושלם"
+          aria-label={t('todos.markComplete')}
         >
           {todo.completed && '✓'}
         </button>
@@ -218,16 +216,16 @@ function TodoItem({ todo, onToggle, onDelete, onUpdate, dragHandleProps, isDragO
               autoFocus
             />
           ) : (
-            <span className={styles.itemTitle} onDoubleClick={() => setEditing(true)} title="לחץ פעמיים לעריכה">
+            <span className={styles.itemTitle} onDoubleClick={() => setEditing(true)} title={t('todos.doubleClickEdit')}>
               {todo.title}
             </span>
           )}
 
           <div className={styles.itemMeta}>
-            <span className={`${styles.priorityDot} ${styles[todo.priority]}`} title={`עדיפות ${PRIORITY_LABEL[todo.priority]}`} />
+            <span className={`${styles.priorityDot} ${styles[todo.priority]}`} title={t('todos.priority') + ' ' + t('todos.' + todo.priority)} />
             {todo.due_date && (
               <span className={`${styles.dueDate} ${overdue ? styles.overdue : ''}`}>
-                {overdue ? '⚠ ' : '📅 '}{formatDate(todo.due_date)}
+                {overdue ? '⚠ ' : '📅 '}{formatDate(todo.due_date, locale)}
               </span>
             )}
             {todo.tags?.map(t => (
@@ -238,11 +236,11 @@ function TodoItem({ todo, onToggle, onDelete, onUpdate, dragHandleProps, isDragO
 
         <div className={styles.itemActions}>
           {todo.content && (
-            <button className={styles.expandBtn} onClick={() => setExpanded(x => !x)} title={expanded ? 'סגור' : 'פרט'}>
+            <button className={styles.expandBtn} onClick={() => setExpanded(x => !x)} title={expanded ? t('todos.closeTask') : t('todos.expandTask')}>
               {expanded ? '▲' : '▼'}
             </button>
           )}
-          <button className={styles.deleteBtn} onClick={() => onDelete(todo.id)} title="מחק">✕</button>
+          <button className={styles.deleteBtn} onClick={() => onDelete(todo.id)} title={t('todos.deleteTask')}>✕</button>
         </div>
       </div>
 
@@ -255,6 +253,7 @@ function TodoItem({ todo, onToggle, onDelete, onUpdate, dragHandleProps, isDragO
 
 // ─── Main Todos Component ─────────────────────────────────────
 export default function Todos() {
+  const { t, i18n } = useTranslation()
   const { user } = useAuth()
   const [todos, setTodos] = useState<Todo[]>([])
   const [loading, setLoading] = useState(true)
@@ -265,6 +264,8 @@ export default function Todos() {
   const [sortBy, setSortBy] = useState<'order' | 'priority' | 'due'>('order')
   const dragId = useRef<number | null>(null)
   const [dragOverId, setDragOverId] = useState<number | null>(null)
+
+  const locale = i18n.language === 'he' ? 'he-IL' : 'en-US'
 
   // ── fetch ──
   useEffect(() => {
@@ -388,7 +389,7 @@ export default function Todos() {
           )}
         </div>
         <button className={styles.addBtn} onClick={() => setShowForm(x => !x)}>
-          {showForm ? '✕' : '+ חדש'}
+          {showForm ? '✕' : t('todos.addNew')}
         </button>
       </div>
 
@@ -410,7 +411,7 @@ export default function Todos() {
               className={`${styles.filterTab} ${filter === f ? styles.activeTab : ''}`}
               onClick={() => setFilter(f)}
             >
-              {f === 'active' ? 'פעילות' : f === 'all' ? 'הכל' : 'הושלמו'}
+              {f === 'active' ? t('todos.active') : f === 'all' ? t('common.all') : t('todos.completed')}
             </button>
           ))}
         </div>
@@ -420,9 +421,9 @@ export default function Todos() {
           value={sortBy}
           onChange={e => setSortBy(e.target.value as typeof sortBy)}
         >
-          <option value="order">סדר ידני</option>
-          <option value="priority">עדיפות</option>
-          <option value="due">תאריך יעד</option>
+          <option value="order">{t('todos.manualOrder')}</option>
+          <option value="priority">{t('todos.byPriority')}</option>
+          <option value="due">{t('todos.byDueDate')}</option>
         </select>
       </div>
 
@@ -433,7 +434,7 @@ export default function Todos() {
             className={`${styles.tagFilterBtn} ${!filterTag ? styles.activeTag : ''}`}
             onClick={() => setFilterTag(null)}
           >
-            הכל
+            {t('common.all')}
           </button>
           {allTags.map(t => (
             <button
@@ -449,11 +450,11 @@ export default function Todos() {
 
       {/* List */}
       <div className={styles.list}>
-        {loading && <div className={styles.empty}>טוען...</div>}
+        {loading && <div className={styles.empty}>{t('common.loading')}</div>}
         {error && <div className={styles.errorMsg}>{error}</div>}
         {!loading && !error && visible.length === 0 && (
           <div className={styles.empty}>
-            {filter === 'completed' ? 'אין משימות שהושלמו עדיין' : 'אין משימות! לחץ + חדש'}
+            {filter === 'completed' ? t('todos.noCompleted') : t('todos.noTasks')}
           </div>
         )}
         {visible.map(todo => (
@@ -464,6 +465,7 @@ export default function Todos() {
             onDelete={handleDelete}
             onUpdate={handleUpdate}
             isDragOver={dragOverId === todo.id}
+            locale={locale}
             dragHandleProps={{
               draggable: sortBy === 'order',
               onDragStart: () => handleDragStart(todo.id),
@@ -478,7 +480,7 @@ export default function Todos() {
       {/* Footer */}
       {todos.length > 0 && (
         <div className={styles.footer}>
-          <span>{activeCount} נותרו</span>
+          <span>{activeCount} {t('todos.remaining')}</span>
           {todos.some(t => t.completed) && (
             <button
               className={styles.clearBtn}
@@ -488,7 +490,7 @@ export default function Todos() {
                 setTodos(prev => prev.filter(t => !t.completed))
               }}
             >
-              נקה שהושלמו
+              {t('todos.clearCompleted')}
             </button>
           )}
         </div>

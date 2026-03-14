@@ -9,7 +9,6 @@
   flex-direction: column;
   gap: 10px;
   font-family: 'DM Sans', sans-serif;
-  direction: rtl;
 }
 
 /* ── Header ── */
@@ -199,7 +198,6 @@
   color: var(--accent);
   cursor: pointer;
   padding: 0;
-  text-align: right;
   transition: opacity 0.1s;
 }
 

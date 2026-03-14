@@ -1,6 +1,7 @@
 // src/components/Notes/NoteItem.tsx
 import { useState, useRef, useCallback } from 'react'
 import { X, Copy, Check, GripVertical, ChevronDown, ChevronUp } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { Note } from '../../lib/supabase'
 import { NOTE_COLORS } from './useNotes'
 import styles from './Notes.module.css'
@@ -18,6 +19,7 @@ interface Props {
 export default function NoteItem({
   note, index, onUpdate, onDelete, onDragStart, onDragEnter, onDragEnd,
 }: Props) {
+  const { t } = useTranslation()
   const [copied, setCopied] = useState(false)
   const [expanded, setExpanded] = useState(true)
   const [showColors, setShowColors] = useState(false)
@@ -62,7 +64,7 @@ export default function NoteItem({
               className={styles.colorDot}
               style={{ backgroundColor: note.color }}
               onClick={() => setShowColors(v => !v)}
-              title="שנה צבע"
+              title={t('notes.changeColor')}
             />
             {showColors && (
               <div className={styles.colorDropdown}>
@@ -81,7 +83,7 @@ export default function NoteItem({
           <input
             className={styles.noteTitleInput}
             defaultValue={note.title ?? ''}
-            placeholder="כותרת..."
+            placeholder={t('notes.titlePlaceholder')}
             onChange={e => scheduleUpdate({ title: e.target.value || null })}
             dir="auto"
           />
@@ -92,7 +94,7 @@ export default function NoteItem({
           <button
             className={`${styles.iconBtn} ${copied ? styles.copied : ''}`}
             onClick={copyTitle}
-            title="העתק כותרת"
+            title={t('notes.copyTitle')}
             disabled={!note.title}
           >
             {copied ? <Check size={13} /> : <Copy size={13} />}
@@ -102,7 +104,7 @@ export default function NoteItem({
           <button
             className={styles.iconBtn}
             onClick={() => setExpanded(v => !v)}
-            title={expanded ? 'כווץ' : 'הרחב'}
+            title={expanded ? t('notes.collapse') : t('notes.expand')}
           >
             {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </button>
@@ -111,7 +113,7 @@ export default function NoteItem({
           <button
             className={`${styles.iconBtn} ${styles.deleteBtn}`}
             onClick={() => onDelete(note.id)}
-            title="מחק"
+            title={t('notes.delete')}
           >
             <X size={13} />
           </button>
@@ -123,7 +125,7 @@ export default function NoteItem({
         <textarea
           className={styles.noteTextarea}
           defaultValue={note.content}
-          placeholder="תוכן הפתק..."
+          placeholder={t('notes.contentPlaceholder')}
           onChange={e => scheduleUpdate({ content: e.target.value })}
           dir="auto"
         />

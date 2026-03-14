@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ThemeProvider } from './context/ThemeContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { LangProvider, useLang } from './context/LangContext'
 import { ThemeToggle } from './components/ThemeToggle'
 import { Sidebar } from './components/Sidebar/Sidebar'
 import Notes from './components/Notes/Notes'
@@ -12,9 +14,12 @@ import LoginPage from './pages/LoginPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import { LogOut } from 'lucide-react'
 import styles from './App.module.css'
+import Stocks from './components/Stocks/Stocks'
 
 function Dashboard() {
   const { user, signOut } = useAuth()
+  const { t } = useTranslation()
+  const { lang, toggleLang } = useLang()
 
   return (
     <div className={styles.layout}>
@@ -29,8 +34,11 @@ function Dashboard() {
                 {user.email}
               </span>
             )}
+            <button className={styles.langBtn} onClick={toggleLang} title={lang === 'he' ? 'Switch to English' : 'עבור לעברית'}>
+              {lang === 'he' ? 'EN' : 'HE'}
+            </button>
             <ThemeToggle />
-            <button className={styles.logoutBtn} onClick={signOut} title="התנתק">
+            <button className={styles.logoutBtn} onClick={signOut} title={t('app.logout')}>
               <LogOut size={15} />
             </button>
           </div>
@@ -49,6 +57,9 @@ function Dashboard() {
           <aside className={styles.notesPanel}>
             <Notes />
           </aside>
+          <aside className={styles.stocksPanel}>
+            <Stocks />
+          </aside>
         </div>
       </main>
     </div>
@@ -60,18 +71,20 @@ export default function App() {
     <BrowserRouter>
       <ThemeProvider>
         <AuthProvider>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          <LangProvider>
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </LangProvider>
         </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>

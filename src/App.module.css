@@ -62,6 +62,29 @@
   background: #fee2e2;
 }
 
+.langBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 8px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text3);
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  letter-spacing: 0.04em;
+}
+
+.langBtn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 /* ─── Body (below topbar) ─── */
 .body {
   flex: 1;
@@ -103,6 +126,16 @@
   border-left: 1px solid var(--border);
   transition: border-color var(--transition);
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.stocksPanel {
+  width: 300px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-left: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -155,4 +188,16 @@
     padding: 20px;
     overflow: visible;
   }
+}
+
+/* ─── LTR overrides (English) ─── */
+:global([dir="ltr"]) .layout { flex-direction: row; }
+:global([dir="ltr"]) .body   { flex-direction: row; }
+
+:global([dir="ltr"]) .leftPanel,
+:global([dir="ltr"]) .newsPanel,
+:global([dir="ltr"]) .notesPanel,
+:global([dir="ltr"]) .stocksPanel {
+  border-left: none;
+  border-right: 1px solid var(--border);
 }

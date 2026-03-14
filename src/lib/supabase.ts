@@ -38,6 +38,14 @@ export interface Todo {
   user_id: number | null
 }
 
+export interface UserStock {
+  id: number
+  created_at: string
+  user_id: string
+  symbol: string
+  sort_order: number
+}
+
 export interface Note {
   id: number
   created_at: string

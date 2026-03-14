@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
 import styles from './News.module.css'
 
@@ -12,12 +13,12 @@ interface NewsItem {
   published_at: string
 }
 
-function timeAgo(dateStr: string): string {
-  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000)
-  if (diff < 60) return 'עכשיו'
-  if (diff < 3600) return `לפני ${Math.floor(diff / 60)} דק׳`
-  if (diff < 86400) return `לפני ${Math.floor(diff / 3600)} שע׳`
-  return `לפני ${Math.floor(diff / 86400)} ימים`
+function timeAgo(dateStr: string, t: (key: string, opts?: any) => string): string {
+  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000 / 60)
+  if (diff < 1) return t('news.now')
+  if (diff < 60) return t('news.minutesAgo', { n: diff })
+  if (diff < 1440) return t('news.hoursAgo', { n: Math.floor(diff / 60) })
+  return t('news.daysAgo', { n: Math.floor(diff / 1440) })
 }
 
 function channelInitial(title: string | null, channel: string): string {
@@ -26,6 +27,7 @@ function channelInitial(title: string | null, channel: string): string {
 }
 
 export default function News() {
+  const { t } = useTranslation()
   const [items, setItems] = useState<NewsItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -70,7 +72,7 @@ export default function News() {
       {/* Header */}
       <div className={styles.header}>
         <h2 className={styles.title}>Telegram News</h2>
-        <button className={styles.refreshBtn} onClick={fetchNews} title="רענן">↻</button>
+        <button className={styles.refreshBtn} onClick={fetchNews} title={t('news.refresh')}>↻</button>
       </div>
 
       {/* Channel filter */}
@@ -80,7 +82,7 @@ export default function News() {
             className={`${styles.channelBtn} ${!filterChannel ? styles.activeChannel : ''}`}
             onClick={() => setFilterChannel(null)}
           >
-            הכל
+            {t('news.all')}
           </button>
           {channels.map(([ch, title]) => (
             <button
@@ -96,12 +98,12 @@ export default function News() {
 
       {/* List */}
       <div className={styles.list}>
-        {loading && <div className={styles.empty}>טוען חדשות...</div>}
+        {loading && <div className={styles.empty}>{t('news.loading')}</div>}
         {error && <div className={styles.errorMsg}>{error}</div>}
         {!loading && !error && visible.length === 0 && (
           <div className={styles.empty}>
-            אין חדשות עדיין.<br />
-            <span className={styles.emptyHint}>הרץ את הסקריפט Python להביא נתונים.</span>
+            {t('news.noNews')}<br />
+            <span className={styles.emptyHint}>{t('news.runScript')}</span>
           </div>
         )}
 
@@ -131,7 +133,7 @@ export default function News() {
                   <span className={styles.channelName}>
                     {item.channel_title || item.channel}
                   </span>
-                  <span className={styles.time}>{timeAgo(item.published_at)}</span>
+                  <span className={styles.time}>{timeAgo(item.published_at, t)}</span>
                 </div>
 
                 {/* Text */}
@@ -147,7 +149,7 @@ export default function News() {
                     className={styles.expandBtn}
                     onClick={() => setExpandedId(isExpanded ? null : item.id)}
                   >
-                    {isExpanded ? 'פחות ▲' : 'קרא עוד ▼'}
+                    {isExpanded ? t('news.readLess') : t('news.readMore')}
                   </button>
                 )}
 
@@ -158,7 +160,7 @@ export default function News() {
                   rel="noopener noreferrer"
                   className={styles.link}
                 >
-                  פתח בטלגרם ↗
+                  {t('news.openTelegram')}
                 </a>
               </div>
             </article>

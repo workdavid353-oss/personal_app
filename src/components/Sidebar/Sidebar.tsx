@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Pencil, Check, EyeOff, Eye, Trash2, KeyRound, User, GripVertical, X, Menu
 } from 'lucide-react'
@@ -56,6 +57,7 @@ interface GroupModalProps {
 }
 
 function GroupModal({ group, onSave, onDelete, onClose }: GroupModalProps) {
+  const { t } = useTranslation()
   const [name, setName] = useState(group?.group_name ?? '')
   const [category, setCategory] = useState(group?.category ?? '')
   const [description, setDescription] = useState(group?.group_description ?? '')
@@ -70,32 +72,32 @@ function GroupModal({ group, onSave, onDelete, onClose }: GroupModalProps) {
   }
 
   return (
-    <Modal title={group ? 'עריכת קטגוריה' : 'קטגוריה חדשה'} onClose={onClose}>
+    <Modal title={group ? t('sidebar.editCategoryTitle') : t('sidebar.newCategoryTitle')} onClose={onClose}>
       <div className={styles.modalBody}>
-        <label className={styles.label}>שם קטגוריה *</label>
+        <label className={styles.label}>{t('sidebar.categoryName')}</label>
         <input className={styles.input} value={name} onChange={e => setName(e.target.value)} autoFocus />
 
-        <label className={styles.label}>קטגוריה (סוג)</label>
-        <input className={styles.input} value={category} onChange={e => setCategory(e.target.value)} placeholder="למשל: עבודה, אישי..." />
+        <label className={styles.label}>{t('sidebar.categoryType')}</label>
+        <input className={styles.input} value={category} onChange={e => setCategory(e.target.value)} placeholder={t('sidebar.categoryTypePlaceholder')} />
 
-        <label className={styles.label}>תיאור</label>
+        <label className={styles.label}>{t('sidebar.description')}</label>
         <input className={styles.input} value={description} onChange={e => setDescription(e.target.value)} />
 
         <label className={styles.checkRow}>
           <input type="checkbox" checked={visible} onChange={e => setVisible(e.target.checked)} />
-          <span>הצג קטגוריה ב-Sidebar</span>
+          <span>{t('sidebar.showCategory')}</span>
         </label>
 
         <div className={styles.modalActions}>
           {onDelete && (
             <button className={styles.deleteBtn} onClick={async () => { setLoading(true); await onDelete(); setLoading(false) }}>
-              <Trash2 size={13} /> מחק קטגוריה
+              <Trash2 size={13} /> {t('sidebar.deleteCategory')}
             </button>
           )}
           <div style={{ flex: 1 }} />
-          <button className={styles.cancelBtn} onClick={onClose}>ביטול</button>
+          <button className={styles.cancelBtn} onClick={onClose}>{t('common.cancel')}</button>
           <button className={styles.saveBtn} onClick={handleSave} disabled={loading || !name.trim()}>
-            {loading ? '...' : 'שמור'}
+            {loading ? '...' : t('common.save')}
           </button>
         </div>
       </div>
@@ -113,6 +115,7 @@ interface LinkModalProps {
 }
 
 function LinkModal({ link, groupId, onSave, onDelete, onClose }: LinkModalProps) {
+  const { t } = useTranslation()
   const [name, setName] = useState(link?.link_name ?? '')
   const [url, setUrl] = useState(link?.link ?? '')
   const [username, setUsername] = useState(link?.username ?? '')
@@ -136,18 +139,18 @@ function LinkModal({ link, groupId, onSave, onDelete, onClose }: LinkModalProps)
   }
 
   return (
-    <Modal title={link ? 'עריכת קישור' : 'קישור חדש'} onClose={onClose}>
+    <Modal title={link ? t('sidebar.editLinkTitle') : t('sidebar.newLinkTitle')} onClose={onClose}>
       <div className={styles.modalBody}>
-        <label className={styles.label}>שם תצוגה *</label>
+        <label className={styles.label}>{t('sidebar.displayName')}</label>
         <input className={styles.input} value={name} onChange={e => setName(e.target.value)} autoFocus />
 
-        <label className={styles.label}>כתובת URL *</label>
+        <label className={styles.label}>{t('sidebar.url')}</label>
         <input className={styles.input} value={url} onChange={e => setUrl(e.target.value)} placeholder="https://..." dir="ltr" />
 
-        <label className={styles.label}>שם משתמש (אופציונלי)</label>
+        <label className={styles.label}>{t('sidebar.username')}</label>
         <input className={styles.input} value={username} onChange={e => setUsername(e.target.value)} />
 
-        <label className={styles.label}>סיסמה (אופציונלי)</label>
+        <label className={styles.label}>{t('sidebar.password')}</label>
         <div className={styles.passwordRow}>
           <input
             className={styles.input}
@@ -163,19 +166,19 @@ function LinkModal({ link, groupId, onSave, onDelete, onClose }: LinkModalProps)
 
         <label className={styles.checkRow}>
           <input type="checkbox" checked={visible} onChange={e => setVisible(e.target.checked)} />
-          <span>הצג קישור ב-Sidebar</span>
+          <span>{t('sidebar.showLink')}</span>
         </label>
 
         <div className={styles.modalActions}>
           {onDelete && (
             <button className={styles.deleteBtn} onClick={async () => { setLoading(true); await onDelete(); setLoading(false) }}>
-              <Trash2 size={13} /> מחק קישור
+              <Trash2 size={13} /> {t('sidebar.deleteLink')}
             </button>
           )}
           <div style={{ flex: 1 }} />
-          <button className={styles.cancelBtn} onClick={onClose}>ביטול</button>
+          <button className={styles.cancelBtn} onClick={onClose}>{t('common.cancel')}</button>
           <button className={styles.saveBtn} onClick={handleSave} disabled={loading || !name.trim() || !url.trim()}>
-            {loading ? '...' : 'שמור'}
+            {loading ? '...' : t('common.save')}
           </button>
         </div>
       </div>
@@ -185,6 +188,7 @@ function LinkModal({ link, groupId, onSave, onDelete, onClose }: LinkModalProps)
 
 // ─── Main Sidebar ─────────────────────────────────────────────
 export function Sidebar() {
+  const { t } = useTranslation()
   const { user } = useAuth()
   const [groups, setGroups] = useState<GroupExt[]>([])
   const [links, setLinks] = useState<LinkExt[]>([])
@@ -308,26 +312,26 @@ export function Sidebar() {
         <button
           className={styles.hamburger}
           onClick={() => setCollapsed(x => !x)}
-          title={collapsed ? 'הרחב סיידבר' : 'צמצם סיידבר'}
+          title={collapsed ? t('sidebar.expand') : t('sidebar.collapse')}
         >
           <Menu size={16} />
         </button>
 
         {!collapsed && (
           <>
-            <span className={styles.sidebarTitle}>קישורים</span>
+            <span className={styles.sidebarTitle}>{t('sidebar.title')}</span>
             <button
               className={`${styles.editToggle} ${editMode ? styles.editActive : ''}`}
               onClick={() => setEditMode(x => !x)}
-              title={editMode ? 'סיים עריכה' : 'מצב עריכה'}
+              title={editMode ? t('sidebar.finishEdit') : t('sidebar.editMode')}
             >
-              {editMode ? <><Check size={13} /> סיום</> : <><Pencil size={13} /> עריכה</>}
+              {editMode ? <><Check size={13} /> {t('sidebar.finishEdit')}</> : <><Pencil size={13} /> {t('sidebar.editMode')}</>}
             </button>
           </>
         )}
       </div>
 
-      {!collapsed && loading && <div className={styles.loading}>טוען...</div>}
+      {!collapsed && loading && <div className={styles.loading}>{t('common.loading')}</div>}
 
       {/* Collapsed — only favicons */}
       {collapsed && (
@@ -344,7 +348,7 @@ export function Sidebar() {
                   title={link.link_name}
                 >
                   <img
-                    src={`https://www.google.com/s2/favicons?domain=${new URL(link.link).hostname}&sz=16`}
+                    src={`https://icons.duckduckgo.com/ip3/${new URL(link.link).hostname}.ico`}
                     alt={link.link_name}
                     className={styles.favicon}
                     onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
@@ -378,7 +382,7 @@ export function Sidebar() {
               <div className={styles.groupHeader}>
                 {editMode && <span className={styles.dragHandle}><GripVertical size={14} /></span>}
                 <span className={styles.groupName}>{group.group_name}</span>
-                {group.visible === false && <span className={styles.hiddenBadge}>מוסתר</span>}
+                {group.visible === false && <span className={styles.hiddenBadge}>{t('common.hidden')}</span>}
 
                 <div className={styles.groupActions}>
                   {editMode && (
@@ -386,14 +390,14 @@ export function Sidebar() {
                       <button
                         className={styles.iconBtn}
                         onClick={() => toggleGroupVisible(group)}
-                        title={group.visible === false ? 'הצג' : 'הסתר'}
+                        title={group.visible === false ? t('common.show') : t('common.hide')}
                       >
                         {group.visible === false ? <Eye size={13} /> : <EyeOff size={13} />}
                       </button>
                       <button
                         className={styles.iconBtn}
                         onClick={() => setGroupModal({ group })}
-                        title="ערוך קטגוריה"
+                        title={t('sidebar.editCategoryBtn')}
                       >
                         <Pencil size={13} />
                       </button>
@@ -413,33 +417,33 @@ export function Sidebar() {
                       // Edit mode — show controls
                       <div className={styles.linkEditRow}>
                         <span className={styles.linkName}>{link.link_name}</span>
-                        {link.visible === false && <span className={styles.hiddenBadge}>מוסתר</span>}
+                        {link.visible === false && <span className={styles.hiddenBadge}>{t('common.hidden')}</span>}
                         <div className={styles.linkActions}>
                           {link.username && (
                             <button
                               className={styles.iconBtn}
                               onClick={() => copyToClipboard(link.username!)}
-                              title={`העתק שם משתמש: ${link.username}`}
+                              title={t('sidebar.copyUsername', { name: link.username })}
                             ><User size={13} /></button>
                           )}
                           {link.password && (
                             <button
                               className={styles.iconBtn}
                               onClick={() => copyToClipboard(link.password!)}
-                              title="העתק סיסמה"
+                              title={t('sidebar.copyPassword')}
                             ><KeyRound size={13} /></button>
                           )}
                           <button
                             className={styles.iconBtn}
                             onClick={() => toggleLinkVisible(link)}
-                            title={link.visible === false ? 'הצג' : 'הסתר'}
+                            title={link.visible === false ? t('common.show') : t('common.hide')}
                           >
                             {link.visible === false ? <Eye size={13} /> : <EyeOff size={13} />}
                           </button>
                           <button
                             className={styles.iconBtn}
                             onClick={() => setLinkModal({ link, groupId: group.id })}
-                            title="ערוך קישור"
+                            title={t('sidebar.editLinkBtn')}
                           ><Pencil size={13} /></button>
                         </div>
                       </div>
@@ -453,7 +457,7 @@ export function Sidebar() {
                           className={styles.linkAnchor}
                         >
                           <img
-                            src={`https://www.google.com/s2/favicons?domain=${new URL(link.link).hostname}&sz=16`}
+                            src={`https://icons.duckduckgo.com/ip3/${new URL(link.link).hostname}.ico`}
                             alt=""
                             className={styles.favicon}
                             onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
@@ -466,14 +470,14 @@ export function Sidebar() {
                               <button
                                 className={styles.credBtn}
                                 onClick={() => copyToClipboard(link.username!)}
-                                title={`שם משתמש: ${link.username}`}
+                                title={t('sidebar.copyUsername', { name: link.username })}
                               ><User size={12} /></button>
                             )}
                             {link.password && (
                               <button
                                 className={styles.credBtn}
                                 onClick={() => copyToClipboard(link.password!)}
-                                title="העתק סיסמה"
+                                title={t('sidebar.copyPassword')}
                               ><KeyRound size={12} /></button>
                             )}
                           </div>
@@ -489,7 +493,7 @@ export function Sidebar() {
                     className={styles.addLinkBtn}
                     onClick={() => setLinkModal({ link: null, groupId: group.id })}
                   >
-                    + קישור חדש
+                    {t('sidebar.addLink')}
                   </button>
                 )}
               </div>
@@ -501,7 +505,7 @@ export function Sidebar() {
       {/* Add group button */}
       {editMode && (
         <button className={styles.addGroupBtn} onClick={() => setGroupModal({ group: null })}>
-          + קטגוריה חדשה
+          {t('sidebar.addCategory')}
         </button>
       )}
         </>
