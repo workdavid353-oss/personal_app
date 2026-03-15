@@ -124,6 +124,8 @@ const en = {
     collapse: 'Collapse',
     expand: 'Expand',
     delete: 'Delete',
+    markComplete: 'Mark as complete',
+    markIncomplete: 'Mark as incomplete',
   },
   weather: {
     days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
@@ -173,6 +175,19 @@ const en = {
     remove: 'Remove',
     chartUnavailable: 'Chart unavailable',
     days: '{{n}}d',
+  },
+  newsDigest: {
+    title: 'News Digest',
+    empty: 'No digest items yet.',
+  },
+  widgets: {
+    title: 'Widgets',
+    todos: 'Todos',
+    weather: 'Weather',
+    news: 'News',
+    newsDigest: 'News Digest',
+    notes: 'Notes',
+    stocks: 'Stocks',
   },
 } as const
 

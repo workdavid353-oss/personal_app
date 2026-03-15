@@ -1,6 +1,6 @@
 // src/components/Notes/NoteItem.tsx
 import { useState, useRef, useCallback } from 'react'
-import { X, Copy, Check, GripVertical, ChevronDown, ChevronUp } from 'lucide-react'
+import { X, Copy, Check, GripVertical, ChevronDown, ChevronUp, CheckCircle2, Circle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { Note } from '../../lib/supabase'
 import { NOTE_COLORS } from './useNotes'
@@ -9,7 +9,7 @@ import styles from './Notes.module.css'
 interface Props {
   note: Note
   index: number
-  onUpdate: (id: number, changes: Partial<Pick<Note, 'content' | 'title' | 'color'>>) => void
+  onUpdate: (id: number, changes: Partial<Pick<Note, 'content' | 'title' | 'color' | 'completed'>>) => void
   onDelete: (id: number) => void
   onDragStart: (index: number) => void
   onDragEnter: (index: number) => void
@@ -45,11 +45,11 @@ export default function NoteItem({
 
   return (
     <div
-      className={styles.noteItem}
+      className={`${styles.noteItem} ${note.completed ? styles.noteCompleted : ''}`}
       style={{ borderLeftColor: note.color, backgroundColor: `${note.color}22` }}
-      draggable
-      onDragStart={() => onDragStart(index)}
-      onDragEnter={() => onDragEnter(index)}
+      draggable={!note.completed}
+      onDragStart={() => !note.completed && onDragStart(index)}
+      onDragEnter={() => !note.completed && onDragEnter(index)}
       onDragEnd={onDragEnd}
       onDragOver={e => e.preventDefault()}
     >
@@ -58,33 +58,45 @@ export default function NoteItem({
         <div className={styles.noteItemLeft}>
           <GripVertical size={14} className={styles.grip} />
 
-          {/* Color dot */}
-          <div className={styles.colorDotWrap}>
-            <button
-              className={styles.colorDot}
-              style={{ backgroundColor: note.color }}
-              onClick={() => setShowColors(v => !v)}
-              title={t('notes.changeColor')}
-            />
-            {showColors && (
-              <div className={styles.colorDropdown}>
-                {NOTE_COLORS.map(c => (
-                  <button
-                    key={c}
-                    className={`${styles.colorOption} ${note.color === c ? styles.activeColor : ''}`}
-                    style={{ backgroundColor: c }}
-                    onClick={() => { onUpdate(note.id, { color: c }); setShowColors(false) }}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+          {/* Complete toggle */}
+          <button
+            className={`${styles.iconBtn} ${note.completed ? styles.completedBtn : ''}`}
+            onClick={() => onUpdate(note.id, { completed: !note.completed })}
+            title={note.completed ? t('notes.markIncomplete') : t('notes.markComplete')}
+          >
+            {note.completed ? <CheckCircle2 size={14} /> : <Circle size={14} />}
+          </button>
+
+          {/* Color dot — only when not completed */}
+          {!note.completed && (
+            <div className={styles.colorDotWrap}>
+              <button
+                className={styles.colorDot}
+                style={{ backgroundColor: note.color }}
+                onClick={() => setShowColors(v => !v)}
+                title={t('notes.changeColor')}
+              />
+              {showColors && (
+                <div className={styles.colorDropdown}>
+                  {NOTE_COLORS.map(c => (
+                    <button
+                      key={c}
+                      className={`${styles.colorOption} ${note.color === c ? styles.activeColor : ''}`}
+                      style={{ backgroundColor: c }}
+                      onClick={() => { onUpdate(note.id, { color: c }); setShowColors(false) }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           <input
-            className={styles.noteTitleInput}
+            className={`${styles.noteTitleInput} ${note.completed ? styles.completedText : ''}`}
             defaultValue={note.title ?? ''}
             placeholder={t('notes.titlePlaceholder')}
             onChange={e => scheduleUpdate({ title: e.target.value || null })}
+            readOnly={note.completed}
             dir="auto"
           />
         </div>
@@ -127,6 +139,7 @@ export default function NoteItem({
           defaultValue={note.content}
           placeholder={t('notes.contentPlaceholder')}
           onChange={e => scheduleUpdate({ content: e.target.value })}
+          readOnly={note.completed}
           dir="auto"
         />
       )}

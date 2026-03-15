@@ -55,4 +55,5 @@ export interface Note {
   color: string
   sort_order: number
   user_id: number | null
+  completed: boolean
 }

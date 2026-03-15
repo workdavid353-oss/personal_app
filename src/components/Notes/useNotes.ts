@@ -56,9 +56,9 @@ export function useNotes() {
     else setNotes(prev => [...prev, data as Note])
   }, [notes])
 
-  // ─── Update content / title / color ──────────────────────────────────────
+  // ─── Update content / title / color / completed ──────────────────────────
   const updateNote = useCallback(
-    async (id: number, changes: Partial<Pick<Note, 'content' | 'title' | 'color'>>) => {
+    async (id: number, changes: Partial<Pick<Note, 'content' | 'title' | 'color' | 'completed'>>) => {
       setNotes(prev => prev.map(n => (n.id === id ? { ...n, ...changes } : n)))
       const { error } = await supabase.from('table_notes').update(changes).eq('id', id)
       if (error) setError(error.message)

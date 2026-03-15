@@ -6,6 +6,7 @@ import {
 import { supabase } from '../../lib/supabase'
 import type { table_links_group, table_links } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { WidgetSettings } from '../WidgetSettings/WidgetSettings'
 import styles from './Sidebar.module.css'
 
 // ─── Extended types ───────────────────────────────────────────
@@ -508,6 +509,11 @@ export function Sidebar() {
           {t('sidebar.addCategory')}
         </button>
       )}
+
+      {/* Widget visibility settings */}
+      <div className={styles.widgetSettingsWrap}>
+        <WidgetSettings />
+      </div>
         </>
       )}
 

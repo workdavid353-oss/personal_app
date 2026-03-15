@@ -489,6 +489,13 @@
 .saveBtn:hover:not(:disabled) { opacity: 0.85; }
 .saveBtn:disabled { opacity: 0.4; cursor: not-allowed; }
 
+/* ─── Widget Settings ─── */
+.widgetSettingsWrap {
+  padding: 8px 10px 16px;
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+}
+
 /* ─── Collapsed mode ─── */
 .collapsedLinks {
   display: flex;

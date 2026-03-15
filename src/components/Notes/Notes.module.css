@@ -27,12 +27,12 @@
 }
 
 .notesLabel {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text2);
   flex: 1;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -94,6 +94,24 @@
 
 .noteItem[draggable='true'] { cursor: grab; }
 .noteItem[draggable='true']:active { cursor: grabbing; }
+
+.noteCompleted {
+  opacity: 0.6;
+}
+
+.noteCompleted .noteTextarea,
+.noteCompleted .noteTitleInput {
+  cursor: default;
+}
+
+.completedText {
+  text-decoration: line-through;
+  color: var(--text3);
+}
+
+.completedBtn {
+  color: #16a34a !important;
+}
 
 /* ─── Note Header ─────────────────────────────────────────────────────────── */
 .noteItemHeader {

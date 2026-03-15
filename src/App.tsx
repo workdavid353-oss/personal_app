@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ThemeProvider } from './context/ThemeContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { LangProvider, useLang } from './context/LangContext'
+import { WidgetSettingsProvider, useWidgetSettings } from './context/WidgetSettingsContext'
 import { ThemeToggle } from './components/ThemeToggle'
 import { Sidebar } from './components/Sidebar/Sidebar'
 import Notes from './components/Notes/Notes'
@@ -12,14 +13,16 @@ import News from './components/News/News'
 import Weather from './components/Weather/Weather'
 import LoginPage from './pages/LoginPage'
 import ProtectedRoute from './components/ProtectedRoute'
-import { LogOut } from 'lucide-react'
+import { LogOut, UserCircle } from 'lucide-react'
 import styles from './App.module.css'
 import Stocks from './components/Stocks/Stocks'
+import NewsDigest from './components/NewsDigest/NewsDigest'
 
 function Dashboard() {
   const { user, signOut } = useAuth()
   const { t } = useTranslation()
   const { lang, toggleLang } = useLang()
+  const { widgets } = useWidgetSettings()
 
   return (
     <div className={styles.layout}>
@@ -31,7 +34,8 @@ function Dashboard() {
           <div className={styles.topbarRight}>
             {user && (
               <span className={styles.userEmail} title={user.email}>
-                {user.email}
+                <UserCircle size={16} />
+                <span className={styles.userName}>{user.email?.split('@')[0]}</span>
               </span>
             )}
             <button className={styles.langBtn} onClick={toggleLang} title={lang === 'he' ? 'Switch to English' : 'עבור לעברית'}>
@@ -45,21 +49,24 @@ function Dashboard() {
         </header>
 
         <div className={styles.body}>
-          <aside className={styles.leftPanel}>
-            <Todos />
-            <Weather />
-          </aside>
-
-          <aside className={styles.newsPanel}>
-            <News />
-          </aside>
-
-          <aside className={styles.notesPanel}>
-            <Notes />
-          </aside>
-          <aside className={styles.stocksPanel}>
-            <Stocks />
-          </aside>
+          {(widgets.todos || widgets.weather) && (
+            <div className={styles.widgetColumn}>
+              {widgets.todos && <Todos />}
+              {widgets.weather && <Weather />}
+            </div>
+          )}
+          {widgets.news && (
+            <div className={styles.widgetNews}><News /></div>
+          )}
+          {widgets.stocks && (
+            <div className={styles.widgetStocks}><Stocks /></div>
+          )}
+          {(widgets.notes || widgets.newsDigest) && (
+            <div className={styles.widgetColumn}>
+              {widgets.notes && <Notes />}
+              {widgets.newsDigest && <NewsDigest />}
+            </div>
+          )}
         </div>
       </main>
     </div>
@@ -72,6 +79,7 @@ export default function App() {
       <ThemeProvider>
         <AuthProvider>
           <LangProvider>
+            <WidgetSettingsProvider>
             <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route
@@ -84,6 +92,7 @@ export default function App() {
               />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
+            </WidgetSettingsProvider>
           </LangProvider>
         </AuthProvider>
       </ThemeProvider>

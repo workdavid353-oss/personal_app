@@ -124,6 +124,8 @@ const he = {
     collapse: 'כווץ',
     expand: 'הרחב',
     delete: 'מחק',
+    markComplete: 'סמן כהושלם',
+    markIncomplete: 'סמן כלא הושלם',
   },
   weather: {
     days: ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'],
@@ -173,6 +175,19 @@ const he = {
     remove: 'הסר',
     chartUnavailable: 'גרף לא זמין',
     days: '{{n}}י׳',
+  },
+  newsDigest: {
+    title: 'תקצירי חדשות',
+    empty: 'אין תקצירים עדיין.',
+  },
+  widgets: {
+    title: 'ווידג\'טים',
+    todos: 'משימות',
+    weather: 'מזג אוויר',
+    news: 'חדשות',
+    newsDigest: 'תקצירי חדשות',
+    notes: 'פתקים',
+    stocks: 'מניות',
   },
 } as const
 
