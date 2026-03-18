@@ -1,22 +1,17 @@
 /* src/components/Notes/Notes.module.css */
 
-/* ─── Container ──────────────────────────────────────────────────────────── */
+/* ─── Container ─── */
 .notesContainer {
-  /* display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden; */
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 1px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
   font-family: 'DM Sans', sans-serif;
 }
 
-/* ─── Toolbar ─────────────────────────────────────────────────────────────── */
+/* ─── Toolbar ─── */
 .notesToolbar {
   display: flex;
   align-items: center;
@@ -63,40 +58,40 @@
 .addNoteBtn:hover { border-color: var(--accent); }
 .addNoteBtn:disabled { opacity: 0.5; cursor: default; }
 
-/* ─── List ────────────────────────────────────────────────────────────────── */
+/* ─── List (sticky grid) ─── */
 .notesList {
-  flex: 1;
-  overflow-y: auto;
-  padding: 8px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .notesList::-webkit-scrollbar { width: 4px; }
 .notesList::-webkit-scrollbar-track { background: transparent; }
 .notesList::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-/* ─── Note Item ───────────────────────────────────────────────────────────── */
+/* ─── Sticky Note ─── */
 .noteItem {
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  border-left: 3px solid;
-  background: var(--surface);
+  border-radius: 0;
   overflow: hidden;
-  transition: box-shadow 0.15s;
+  box-shadow: 2px 3px 8px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.15s, transform 0.15s;
   cursor: default;
+  position: relative;
 }
 
 .noteItem:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  box-shadow: 4px 6px 16px rgba(0, 0, 0, 0.18), 0 2px 4px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
 }
 
 .noteItem[draggable='true'] { cursor: grab; }
 .noteItem[draggable='true']:active { cursor: grabbing; }
 
 .noteCompleted {
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
 .noteCompleted .noteTextarea,
@@ -106,26 +101,28 @@
 
 .completedText {
   text-decoration: line-through;
-  color: var(--text3);
+  opacity: 0.6;
 }
 
 .completedBtn {
   color: #16a34a !important;
 }
 
-/* ─── Note Header ─────────────────────────────────────────────────────────── */
+/* ─── Note Header (toolbar bar) ─── */
 .noteItemHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 7px 8px 7px 6px;
-  gap: 4px;
+  padding: 5px 6px;
+  background: rgba(0, 0, 0, 0.1);
+  gap: 3px;
+  flex-shrink: 0;
 }
 
 .noteItemLeft {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   flex: 1;
   min-width: 0;
 }
@@ -133,27 +130,27 @@
 .noteItemRight {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 1px;
   flex-shrink: 0;
 }
 
 .grip {
-  color: var(--text3);
+  color: rgba(0, 0, 0, 0.35);
   flex-shrink: 0;
   cursor: grab;
 }
 
-/* ─── Color dot ───────────────────────────────────────────────────────────── */
+/* ─── Color dot ─── */
 .colorDotWrap {
   position: relative;
   flex-shrink: 0;
 }
 
 .colorDot {
-  width: 12px;
-  height: 12px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
-  border: 1.5px solid rgba(0,0,0,0.18);
+  border: 1.5px solid rgba(0, 0, 0, 0.25);
   cursor: pointer;
   transition: transform 0.1s;
   padding: 0;
@@ -188,88 +185,82 @@
 .colorOption:hover { transform: scale(1.15); }
 .activeColor { border-color: rgba(0,0,0,0.45); transform: scale(1.15); }
 
-/* ─── Title input ─────────────────────────────────────────────────────────── */
+/* ─── Title ─── */
 .noteTitleInput {
   flex: 1;
   min-width: 0;
   font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.7);
   background: transparent;
   border: none;
   outline: none;
 }
 
 .noteTitleInput::placeholder {
-  color: var(--text3);
+  color: rgba(0, 0, 0, 0.35);
   font-weight: 400;
 }
 
-/* ─── Icon buttons ────────────────────────────────────────────────────────── */
+/* ─── Icon buttons ─── */
 .iconBtn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   border: none;
   background: none;
   border-radius: 4px;
-  color: var(--text3);
+  color: rgba(0, 0, 0, 0.45);
   cursor: pointer;
   transition: color 0.15s, background 0.15s;
-  opacity: 0;
 }
 
-.noteItem:hover .iconBtn { opacity: 1; }
-
 .iconBtn:hover {
-  color: var(--text);
-  background: var(--surface2);
+  color: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .iconBtn:disabled {
-  opacity: 0.3 !important;
+  opacity: 0.3;
   cursor: default;
 }
 
 .copied {
-  color: #22c55e !important;
-  opacity: 1 !important;
+  color: #16a34a !important;
 }
 
 .deleteBtn:hover {
-  color: #ef4444 !important;
-  background: #fee2e2 !important;
+  color: #b91c1c !important;
+  background: rgba(239, 68, 68, 0.15) !important;
 }
 
-/* ─── Textarea ────────────────────────────────────────────────────────────── */
+/* ─── Textarea ─── */
 .noteTextarea {
   display: block;
   width: 100%;
-  min-height: 70px;
-  max-height: 200px;
-  resize: vertical;
+  resize: none;
+  overflow: hidden;
   border: none;
-  border-top: 1px solid var(--border);
   outline: none;
   background: transparent;
-  padding: 8px 10px 8px 14px;
+  padding: 8px 10px;
   font-family: 'DM Mono', monospace;
   font-size: 12px;
   line-height: 1.6;
-  color: var(--text2);
+  color: rgba(0, 0, 0, 0.75);
   box-sizing: border-box;
 }
 
 .noteTextarea::placeholder {
-  color: var(--text3);
+  color: rgba(0, 0, 0, 0.3);
   font-family: 'DM Sans', sans-serif;
   font-style: italic;
 }
 
-/* ─── Empty state ─────────────────────────────────────────────────────────── */
+/* ─── Empty state ─── */
 .emptyState {
   display: flex;
   flex-direction: column;
@@ -281,6 +272,7 @@
   font-family: 'DM Sans', sans-serif;
   font-size: 13px;
   user-select: none;
+  grid-column: 1 / -1;
 }
 
 .emptyState button {
@@ -294,7 +286,7 @@
   font-family: 'DM Sans', sans-serif;
 }
 
-/* ─── Spin ────────────────────────────────────────────────────────────────── */
+/* ─── Spin ─── */
 .spin {
   animation: spin 1s linear infinite;
 }

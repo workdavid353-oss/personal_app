@@ -41,3 +41,31 @@
   flex-direction: column;
   gap: 5px;
 }
+
+.date {
+  font-size: 12px;
+  color: var(--text3);
+}
+
+@media (max-width: 768px) {
+  .clock {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .time {
+    font-size: 2rem;
+  }
+
+  .dates {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    margin-top: 2px;
+  }
+
+  .date {
+    font-size: 11px;
+    white-space: nowrap;
+  }
+}

@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from './AuthContext'
 
-export type WidgetKey = 'todos' | 'weather' | 'news' | 'notes' | 'stocks' | 'newsDigest'
+export type WidgetKey = 'todos' | 'weather' | 'news' | 'notes' | 'stocks' | 'newsDigest' | 'bankRates'
 
 type WidgetMap = Record<WidgetKey, boolean>
 
@@ -14,6 +14,7 @@ const DEFAULTS: WidgetMap = {
   notes: true,
   stocks: true,
   newsDigest: true,
+  bankRates: true,
 }
 
 interface WidgetSettingsCtx {

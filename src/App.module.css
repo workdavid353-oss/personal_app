@@ -139,7 +139,7 @@
 /* ─── Mobile ─── */
 @media (max-width: 768px) {
   .layout {
-    flex-direction: column-reverse;
+    flex-direction: column;
     height: auto;
     min-height: 100vh;
     overflow: auto;
@@ -148,10 +148,14 @@
   .main {
     overflow: visible;
     height: auto;
+    width: 100%;
   }
 
   .topbar {
-    padding: 16px 20px 12px;
+    padding: 12px 56px 10px 16px;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
   }
 
   .body {

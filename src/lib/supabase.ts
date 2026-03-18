@@ -46,6 +46,15 @@ export interface UserStock {
   sort_order: number
 }
 
+export interface BankRate {
+  id: number
+  currency: string
+  rate: number
+  unit: number
+  change: number
+  fetched_at: string
+}
+
 export interface Note {
   id: number
   created_at: string

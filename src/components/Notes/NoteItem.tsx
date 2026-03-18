@@ -1,6 +1,6 @@
 // src/components/Notes/NoteItem.tsx
-import { useState, useRef, useCallback } from 'react'
-import { X, Copy, Check, GripVertical, ChevronDown, ChevronUp, CheckCircle2, Circle } from 'lucide-react'
+import { useState, useRef, useCallback, useEffect } from 'react'
+import { X, Copy, Check, GripVertical, CheckCircle2, Circle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { Note } from '../../lib/supabase'
 import { NOTE_COLORS } from './useNotes'
@@ -21,9 +21,18 @@ export default function NoteItem({
 }: Props) {
   const { t } = useTranslation()
   const [copied, setCopied] = useState(false)
-  const [expanded, setExpanded] = useState(true)
   const [showColors, setShowColors] = useState(false)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  function autoResize() {
+    const el = textareaRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = el.scrollHeight + 'px'
+  }
+
+  useEffect(() => { autoResize() }, [])
 
   // ─── Debounced save ───────────────────────────────────────────────────────
   const scheduleUpdate = useCallback(
@@ -46,7 +55,7 @@ export default function NoteItem({
   return (
     <div
       className={`${styles.noteItem} ${note.completed ? styles.noteCompleted : ''}`}
-      style={{ borderLeftColor: note.color, backgroundColor: `${note.color}22` }}
+      style={{ backgroundColor: note.color }}
       draggable={!note.completed}
       onDragStart={() => !note.completed && onDragStart(index)}
       onDragEnter={() => !note.completed && onDragEnter(index)}
@@ -112,15 +121,6 @@ export default function NoteItem({
             {copied ? <Check size={13} /> : <Copy size={13} />}
           </button>
 
-          {/* Expand / collapse */}
-          <button
-            className={styles.iconBtn}
-            onClick={() => setExpanded(v => !v)}
-            title={expanded ? t('notes.collapse') : t('notes.expand')}
-          >
-            {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          </button>
-
           {/* Delete */}
           <button
             className={`${styles.iconBtn} ${styles.deleteBtn}`}
@@ -133,16 +133,15 @@ export default function NoteItem({
       </div>
 
       {/* ── Content ── */}
-      {expanded && (
-        <textarea
-          className={styles.noteTextarea}
-          defaultValue={note.content}
-          placeholder={t('notes.contentPlaceholder')}
-          onChange={e => scheduleUpdate({ content: e.target.value })}
-          readOnly={note.completed}
-          dir="auto"
-        />
-      )}
+      <textarea
+        ref={textareaRef}
+        className={styles.noteTextarea}
+        defaultValue={note.content}
+        placeholder={t('notes.contentPlaceholder')}
+        onChange={e => { autoResize(); scheduleUpdate({ content: e.target.value }) }}
+        readOnly={note.completed}
+        dir="auto"
+      />
     </div>
   )
 }

@@ -196,6 +196,15 @@ export function Sidebar() {
   const [loading, setLoading] = useState(true)
   const [editMode, setEditMode] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  function handleHamburgerClick() {
+    if (window.innerWidth <= 768) {
+      setMobileOpen(false)
+    } else {
+      setCollapsed(x => !x)
+    }
+  }
 
   // modals
   const [groupModal, setGroupModal] = useState<{ group: GroupExt | null } | null>(null)
@@ -307,12 +316,25 @@ export function Sidebar() {
   const visibleGroups = editMode ? groups : groups.filter(g => g.visible !== false)
 
   return (
-    <nav className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''}`}>
+    <>
+      {/* Mobile hamburger — fixed, only visible on mobile when drawer is closed */}
+      <button
+        className={`${styles.mobileHamburger} ${mobileOpen ? styles.mobileHamburgerHidden : ''}`}
+        onClick={() => setMobileOpen(true)}
+        aria-label={t('sidebar.expand')}
+      >
+        <Menu size={18} />
+      </button>
+
+      {/* Backdrop */}
+      {mobileOpen && <div className={styles.backdrop} onClick={() => setMobileOpen(false)} />}
+
+    <nav className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''} ${mobileOpen ? styles.mobileOpen : ''}`}>
       {/* Header */}
       <div className={styles.sidebarHeader}>
         <button
           className={styles.hamburger}
-          onClick={() => setCollapsed(x => !x)}
+          onClick={handleHamburgerClick}
           title={collapsed ? t('sidebar.expand') : t('sidebar.collapse')}
         >
           <Menu size={16} />
@@ -456,6 +478,7 @@ export function Sidebar() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className={styles.linkAnchor}
+                          onClick={() => setMobileOpen(false)}
                         >
                           <img
                             src={`https://icons.duckduckgo.com/ip3/${new URL(link.link).hostname}.ico`}
@@ -537,5 +560,6 @@ export function Sidebar() {
         />
       )}
     </nav>
+    </>
   )
 }

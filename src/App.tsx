@@ -17,6 +17,7 @@ import { LogOut, UserCircle } from 'lucide-react'
 import styles from './App.module.css'
 import Stocks from './components/Stocks/Stocks'
 import NewsDigest from './components/NewsDigest/NewsDigest'
+import BankRates from './components/BankRates/BankRates'
 
 function Dashboard() {
   const { user, signOut } = useAuth()
@@ -49,22 +50,23 @@ function Dashboard() {
         </header>
 
         <div className={styles.body}>
-          {(widgets.todos || widgets.weather) && (
+          {(widgets.todos || widgets.weather || widgets.bankRates) && (
             <div className={styles.widgetColumn}>
               {widgets.todos && <Todos />}
               {widgets.weather && <Weather />}
+              {widgets.bankRates && <BankRates />}
             </div>
           )}
-          {widgets.news && (
-            <div className={styles.widgetNews}><News /></div>
+          {widgets.newsDigest && (
+            <div className={styles.widgetNews}><NewsDigest /></div>
           )}
           {widgets.stocks && (
             <div className={styles.widgetStocks}><Stocks /></div>
           )}
-          {(widgets.notes || widgets.newsDigest) && (
+          {(widgets.notes || widgets.news) && (
             <div className={styles.widgetColumn}>
               {widgets.notes && <Notes />}
-              {widgets.newsDigest && <NewsDigest />}
+              {widgets.news && <News />}
             </div>
           )}
         </div>

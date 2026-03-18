@@ -520,3 +520,74 @@
 .collapsedLink:hover {
   background: var(--surface2);
 }
+
+/* ─── Mobile drawer ─── */
+.mobileHamburger {
+  display: none;
+}
+
+.backdrop {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: 260px;
+    transform: translateX(100%);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    z-index: 200;
+    border-left: 1px solid var(--border);
+    box-shadow: none;
+  }
+
+  .sidebar.mobileOpen {
+    transform: translateX(0);
+    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.18);
+  }
+
+  .sidebar.collapsed {
+    width: 260px;
+    overflow: auto;
+  }
+
+  .mobileHamburger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    z-index: 199;
+    width: 36px;
+    height: 36px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text2);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .mobileHamburger:hover {
+    background: var(--surface2);
+    color: var(--text);
+  }
+
+  .mobileHamburgerHidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 199;
+    backdrop-filter: blur(2px);
+  }
+}

@@ -32,12 +32,22 @@ function parseSources(raw: string): Source[] {
   try { return JSON.parse(raw) } catch { return [] }
 }
 
+
 export default function NewsDigest() {
   const { t } = useTranslation()
   const [items, setItems] = useState<DigestItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [expandedId, setExpandedId] = useState<number | null>(null)
+  const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set())
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null)
+
+  function toggleExpanded(id: number) {
+    setExpandedIds(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
 
   const fetchDigest = useCallback(async () => {
     setLoading(true)
@@ -49,7 +59,12 @@ export default function NewsDigest() {
       .limit(10)
 
     if (error) setError(error.message)
-    else setItems(data as DigestItem[])
+    else {
+      const items = data as DigestItem[]
+      setItems(items)
+      setExpandedIds(new Set(items.map(i => i.id)))
+      setLastRefreshed(new Date())
+    }
     setLoading(false)
   }, [])
 
@@ -59,7 +74,14 @@ export default function NewsDigest() {
     <div className={styles.container}>
       {/* Header */}
       <div className={styles.header}>
-        <span className={styles.title}>{t('newsDigest.title')}</span>
+        <div className={styles.headerLeft}>
+          <span className={styles.title}>{t('newsDigest.title')}</span>
+          {lastRefreshed && (
+            <span className={styles.lastRefreshed}>
+              {lastRefreshed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+            </span>
+          )}
+        </div>
         <button
           className={styles.refreshBtn}
           onClick={fetchDigest}
@@ -80,14 +102,14 @@ export default function NewsDigest() {
 
         {items.map(item => {
           const sources = parseSources(item.sources)
-          const expanded = expandedId === item.id
+          const expanded = expandedIds.has(item.id)
 
           return (
             <div key={item.id} className={styles.card}>
               {/* Card header */}
               <div
                 className={styles.cardHeader}
-                onClick={() => setExpandedId(expanded ? null : item.id)}
+                onClick={() => toggleExpanded(item.id)}
               >
                 <div className={styles.cardTop}>
                   <span className={styles.categoryBadge}>{item.category}</span>

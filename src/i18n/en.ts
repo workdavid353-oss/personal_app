@@ -188,6 +188,26 @@ const en = {
     newsDigest: 'News Digest',
     notes: 'Notes',
     stocks: 'Stocks',
+    bankRates: 'Bank Rates',
+  },
+  bankRates: {
+    title: 'Bank of Israel Rates',
+    empty: 'No data available.',
+    refresh: 'Refresh',
+    currencies: {
+      USD: '🇺🇸 Dollar',
+      EUR: '🇪🇺 Euro',
+      GBP: '🇬🇧 Pound',
+      JPY: '🇯🇵 Yen',
+      CHF: '🇨🇭 Franc',
+      CAD: '🇨🇦 Canadian Dollar',
+      AUD: '🇦🇺 Australian Dollar',
+      JOD: '🇯🇴 Jordanian Dinar',
+      EGP: '🇪🇬 Egyptian Pound',
+      NOK: '🇳🇴 Norwegian Krone',
+      DKK: '🇩🇰 Danish Krone',
+      SEK: '🇸🇪 Swedish Krone',
+    },
   },
 } as const
 
