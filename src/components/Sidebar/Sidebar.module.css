@@ -114,7 +114,8 @@
   align-items: center;
   gap: 5px;
   padding: 6px 14px 4px;
-  cursor: default;
+  cursor: pointer;
+  user-select: none;
 }
 
 .dragHandle {
@@ -155,6 +156,17 @@
 }
 
 .groupHeader:hover .groupActions { opacity: 1; }
+
+.groupChevron {
+  color: var(--text3);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.groupChevronCollapsed {
+  transform: rotate(-90deg);
+}
 
 .iconBtn {
   background: none;

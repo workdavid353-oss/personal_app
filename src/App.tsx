@@ -4,6 +4,7 @@ import { ThemeProvider } from './context/ThemeContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { LangProvider, useLang } from './context/LangContext'
 import { WidgetSettingsProvider, useWidgetSettings } from './context/WidgetSettingsContext'
+import { MasterPasswordProvider } from './context/MasterPasswordContext'
 import { ThemeToggle } from './components/ThemeToggle'
 import { Sidebar } from './components/Sidebar/Sidebar'
 import Notes from './components/Notes/Notes'
@@ -81,6 +82,7 @@ export default function App() {
       <ThemeProvider>
         <AuthProvider>
           <LangProvider>
+            <MasterPasswordProvider>
             <WidgetSettingsProvider>
             <Routes>
               <Route path="/login" element={<LoginPage />} />
@@ -95,6 +97,7 @@ export default function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
             </WidgetSettingsProvider>
+            </MasterPasswordProvider>
           </LangProvider>
         </AuthProvider>
       </ThemeProvider>

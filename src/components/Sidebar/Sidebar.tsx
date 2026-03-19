@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  Pencil, Check, EyeOff, Eye, Trash2, KeyRound, User, GripVertical, X, Menu
+  Pencil, Check, EyeOff, Eye, Trash2, KeyRound, User, GripVertical, X, Menu, ChevronDown
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import type { table_links_group, table_links } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { useMasterPassword } from '../../context/MasterPasswordContext'
+import { encryptPassword, decryptPassword, isEncrypted } from '../../lib/crypto'
 import { WidgetSettings } from '../WidgetSettings/WidgetSettings'
 import styles from './Sidebar.module.css'
 
@@ -191,12 +193,26 @@ function LinkModal({ link, groupId, onSave, onDelete, onClose }: LinkModalProps)
 export function Sidebar() {
   const { t } = useTranslation()
   const { user } = useAuth()
+  const { masterPassword, setMasterPassword } = useMasterPassword()
+  const [masterPwInput, setMasterPwInput] = useState('')
+  const [masterPwModal, setMasterPwModal] = useState<'set' | 'decrypt' | null>(null)
+  const [pendingDecryptText, setPendingDecryptText] = useState<string | null>(null)
+  const [masterPwError, setMasterPwError] = useState(false)
   const [groups, setGroups] = useState<GroupExt[]>([])
   const [links, setLinks] = useState<LinkExt[]>([])
   const [loading, setLoading] = useState(true)
   const [editMode, setEditMode] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<number>>(new Set())
+
+  function toggleGroup(id: number) {
+    setCollapsedGroups(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
 
   function handleHamburgerClick() {
     if (window.innerWidth <= 768) {
@@ -269,15 +285,16 @@ export function Sidebar() {
 
   // ── save link ──
   async function saveLink(data: Partial<LinkExt>, id?: number) {
+    const encryptedData = { ...data, password: await maybeEncrypt(data.password ?? null) }
     if (id) {
-      await supabase.from('table_links').update(data).eq('id', id)
-      setLinks(prev => prev.map(l => l.id === id ? { ...l, ...data } : l))
+      await supabase.from('table_links').update(encryptedData).eq('id', id)
+      setLinks(prev => prev.map(l => l.id === id ? { ...l, ...encryptedData } : l))
     } else {
       const groupLinks = links.filter(l => l.group_link_id === data.group_link_id)
       const maxOrder = groupLinks.length ? Math.max(...groupLinks.map(l => l.sort_order ?? 0)) + 1 : 0
       const { data: newLink } = await supabase
         .from('table_links')
-        .insert([{ ...data, sort_order: maxOrder, user_id: user?.id ?? null }])
+        .insert([{ ...encryptedData, sort_order: maxOrder, user_id: user?.id ?? null }])
         .select().single()
       if (newLink) setLinks(prev => [...prev, newLink])
     }
@@ -308,9 +325,58 @@ export function Sidebar() {
     setDragOverGroupId(null)
   }
 
-  // ── copy to clipboard ──
-  function copyToClipboard(text: string) {
-    navigator.clipboard.writeText(text)
+  // ── copy to clipboard (with decryption if needed) ──
+  async function copyToClipboard(text: string) {
+    if (!isEncrypted(text)) {
+      navigator.clipboard.writeText(text)
+      return
+    }
+    if (masterPassword) {
+      try {
+        const plain = await decryptPassword(text, masterPassword)
+        navigator.clipboard.writeText(plain)
+      } catch {
+        // master password changed — prompt again
+        setMasterPassword(null)
+        setPendingDecryptText(text)
+        setMasterPwError(false)
+        setMasterPwModal('decrypt')
+      }
+    } else {
+      setPendingDecryptText(text)
+      setMasterPwError(false)
+      setMasterPwModal('decrypt')
+    }
+  }
+
+  // ── handle master password modal confirm ──
+  async function handleMasterPwConfirm() {
+    if (!masterPwInput) return
+    if (masterPwModal === 'set') {
+      setMasterPassword(masterPwInput)
+      setMasterPwInput('')
+      setMasterPwModal(null)
+    } else if (masterPwModal === 'decrypt' && pendingDecryptText) {
+      try {
+        const plain = await decryptPassword(pendingDecryptText, masterPwInput)
+        navigator.clipboard.writeText(plain)
+        setMasterPassword(masterPwInput)
+        setMasterPwInput('')
+        setMasterPwModal(null)
+        setPendingDecryptText(null)
+        setMasterPwError(false)
+      } catch {
+        setMasterPwError(true)
+      }
+    }
+  }
+
+  // ── encrypt password before saving ──
+  async function maybeEncrypt(password: string | null): Promise<string | null> {
+    if (!password) return null
+    if (!masterPassword) return password // no master pw set — save plain
+    if (isEncrypted(password)) return password // already encrypted
+    return encryptPassword(password, masterPassword)
   }
 
   const visibleGroups = editMode ? groups : groups.filter(g => g.visible !== false)
@@ -343,6 +409,18 @@ export function Sidebar() {
         {!collapsed && (
           <>
             <span className={styles.sidebarTitle}>{t('sidebar.title')}</span>
+            <button
+              className={`${styles.editToggle} ${masterPassword ? styles.editActive : ''}`}
+              onClick={() => {
+                if (masterPassword) { setMasterPassword(null); return }
+                setMasterPwError(false)
+                setMasterPwInput('')
+                setMasterPwModal('set')
+              }}
+              title={masterPassword ? 'Clear master password' : 'Set master password'}
+            >
+              <KeyRound size={13} />
+            </button>
             <button
               className={`${styles.editToggle} ${editMode ? styles.editActive : ''}`}
               onClick={() => setEditMode(x => !x)}
@@ -390,6 +468,7 @@ export function Sidebar() {
         {visibleGroups.map(group => {
           const groupLinks = links.filter(l => l.group_link_id === group.id)
           const visibleLinks = editMode ? groupLinks : groupLinks.filter(l => l.visible !== false)
+          const isGroupCollapsed = collapsedGroups.has(group.id)
 
           return (
             <div
@@ -402,10 +481,16 @@ export function Sidebar() {
               onDragEnd={() => setDragOverGroupId(null)}
             >
               {/* Group header */}
-              <div className={styles.groupHeader}>
+              <div className={styles.groupHeader} onClick={() => !editMode && toggleGroup(group.id)}>
                 {editMode && <span className={styles.dragHandle}><GripVertical size={14} /></span>}
                 <span className={styles.groupName}>{group.group_name}</span>
                 {group.visible === false && <span className={styles.hiddenBadge}>{t('common.hidden')}</span>}
+                {!editMode && (
+                  <ChevronDown
+                    size={12}
+                    className={`${styles.groupChevron} ${isGroupCollapsed ? styles.groupChevronCollapsed : ''}`}
+                  />
+                )}
 
                 <div className={styles.groupActions}>
                   {editMode && (
@@ -430,7 +515,7 @@ export function Sidebar() {
               </div>
 
               {/* Links */}
-              <div className={styles.linksList}>
+              {!isGroupCollapsed && <div className={styles.linksList}>
                 {visibleLinks.map(link => (
                   <div
                     key={link.id}
@@ -520,7 +605,7 @@ export function Sidebar() {
                     {t('sidebar.addLink')}
                   </button>
                 )}
-              </div>
+              </div>}
             </div>
           )
         })}
@@ -538,6 +623,34 @@ export function Sidebar() {
         <WidgetSettings />
       </div>
         </>
+      )}
+
+      {/* Master password modal */}
+      {masterPwModal && (
+        <Modal
+          title={masterPwModal === 'set' ? 'Set Master Password' : 'Enter Master Password'}
+          onClose={() => { setMasterPwModal(null); setMasterPwInput(''); setMasterPwError(false) }}
+        >
+          <div className={styles.modalBody}>
+            <label className={styles.label}>Master Password</label>
+            <input
+              className={styles.input}
+              type="password"
+              value={masterPwInput}
+              onChange={e => { setMasterPwInput(e.target.value); setMasterPwError(false) }}
+              onKeyDown={async e => { if (e.key === 'Enter') await handleMasterPwConfirm() }}
+              autoFocus
+            />
+            {masterPwError && <span style={{ color: '#ef4444', fontSize: 12 }}>Wrong password</span>}
+            <div className={styles.modalActions}>
+              <div style={{ flex: 1 }} />
+              <button className={styles.cancelBtn} onClick={() => { setMasterPwModal(null); setMasterPwInput('') }}>Cancel</button>
+              <button className={styles.saveBtn} onClick={handleMasterPwConfirm} disabled={!masterPwInput}>
+                {masterPwModal === 'set' ? 'Set' : 'Decrypt'}
+              </button>
+            </div>
+          </div>
+        </Modal>
       )}
 
       {/* Modals */}
