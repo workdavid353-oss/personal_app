@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ThemeProvider } from './context/ThemeContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
@@ -19,6 +19,7 @@ import styles from './App.module.css'
 import Stocks from './components/Stocks/Stocks'
 import NewsDigest from './components/NewsDigest/NewsDigest'
 import BankRates from './components/BankRates/BankRates'
+import GoldItemsPage from './pages/GoldItemsPage'
 
 function Dashboard() {
   const { user, signOut } = useAuth()
@@ -33,6 +34,10 @@ function Dashboard() {
       <main className={styles.main}>
         <header className={styles.topbar}>
           <Clock />
+          <nav className={styles.topbarNav}>
+            <NavLink to="/" end className={({ isActive }) => `${styles.navLink} ${isActive ? styles.navLinkActive : ''}`}>Dashboard</NavLink>
+            <NavLink to="/gold-items" className={({ isActive }) => `${styles.navLink} ${isActive ? styles.navLinkActive : ''}`}>Gold Items</NavLink>
+          </nav>
           <div className={styles.topbarRight}>
             {user && (
               <span className={styles.userEmail} title={user.email}>
@@ -91,6 +96,14 @@ export default function App() {
                 element={
                   <ProtectedRoute>
                     <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/gold-items"
+                element={
+                  <ProtectedRoute>
+                    <GoldItemsPage />
                   </ProtectedRoute>
                 }
               />

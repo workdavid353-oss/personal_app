@@ -25,6 +25,37 @@
   transition: border-color var(--transition);
 }
 
+.topbarNav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  color: var(--text3);
+  text-decoration: none;
+  transition: color 0.15s, background 0.15s;
+  letter-spacing: 0.03em;
+}
+
+.navLink:hover {
+  color: var(--text);
+  background: var(--hover, rgba(0,0,0,0.05));
+}
+
+.navLinkActive {
+  color: var(--accent);
+  background: var(--hover, rgba(0,0,0,0.05));
+}
+
 .topbarRight {
   display: flex;
   align-items: center;
