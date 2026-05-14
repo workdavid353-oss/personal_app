@@ -38,17 +38,6 @@ export default function NewsDigest() {
   const [items, setItems] = useState<DigestItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set())
-  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null)
-
-  function toggleExpanded(id: number) {
-    setExpandedIds(prev => {
-      const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
-      return next
-    })
-  }
-
   const fetchDigest = useCallback(async () => {
     setLoading(true)
     setError(null)
@@ -62,8 +51,6 @@ export default function NewsDigest() {
     else {
       const items = data as DigestItem[]
       setItems(items)
-      setExpandedIds(new Set(items.map(i => i.id)))
-      setLastRefreshed(new Date())
     }
     setLoading(false)
   }, [])

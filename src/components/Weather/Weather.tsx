@@ -49,12 +49,6 @@ export default function Weather() {
 
   const DAYS = t('weather.days', { returnObjects: true }) as string[]
 
-  const WIND_DIR: Record<string, string> = {
-    N: t('weather.north'), NNE: t('weather.northeast'), NE: t('weather.northeast'), ENE: t('weather.northwest'),
-    E: t('weather.east'), ESE: t('weather.southeast'), SE: t('weather.southeast'), SSE: t('weather.southeast'),
-    S: t('weather.south'), SSW: t('weather.southwest'), SW: t('weather.southwest'), WSW: t('weather.southwest'),
-    W: t('weather.west'), WNW: t('weather.northwest'), NW: t('weather.northwest'), NNW: t('weather.northwest'),
-  }
 
   // הערכת מצב הים לפי מהירות רוח (בופורט מפושט)
   function seaState(wind_kph: number): { label: string; color: string } {

@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import type { ReactElement } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, NavLink, Outlet } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ThemeProvider, useTheme } from './context/ThemeContext'
@@ -106,7 +107,7 @@ function AppLayout() {
 }
 
 // ─── Dashboard ────────────────────────────────────────────────
-const WIDGET_COMPONENTS: Record<WidgetKey, JSX.Element> = {
+const WIDGET_COMPONENTS: Record<WidgetKey, ReactElement> = {
   todos:      <Todos />,
   weather:    <Weather />,
   bankRates:  <BankRates />,

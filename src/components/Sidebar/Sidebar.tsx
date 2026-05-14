@@ -574,7 +574,7 @@ export function Sidebar({ onToast }: SidebarProps) {
 
               {/* Links */}
               {!isGroupCollapsed && <div className={styles.linksList}>
-                {visibleLinks.map(link => (
+                {visibleLinks.map((link: LinkExt) => (
                   <div
                     key={link.id}
                     className={`${styles.linkItem} ${link.visible === false ? styles.hiddenLink : ''}`}
