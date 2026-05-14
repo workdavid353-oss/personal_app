@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { RefreshCw, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react'
+import { RefreshCw, Sparkles, ExternalLink } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import styles from './NewsDigest.module.css'
 
@@ -71,80 +71,50 @@ export default function NewsDigest() {
   useEffect(() => { fetchDigest() }, [fetchDigest])
 
   return (
-    <div className={styles.container}>
-      {/* Header */}
-      <div className={styles.header}>
-        <div className={styles.headerLeft}>
-          <span className={styles.title}>{t('newsDigest.title')}</span>
-          {lastRefreshed && (
-            <span className={styles.lastRefreshed}>
-              {lastRefreshed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-            </span>
-          )}
+    <div
+      className="card card-accent"
+      style={{ '--accent': 'var(--lavender)', '--accent-soft': 'var(--lavender-soft)' } as React.CSSProperties}
+    >
+      <div className="card-head">
+        <span className="card-tag"><Sparkles size={16} /></span>
+        <span className="card-title">{t('newsDigest.title', 'Daily digest')}</span>
+        <span className="card-subtitle">by AI</span>
+        <div className="card-tools">
+          <button className={`tool ${styles.refreshBtn}`} onClick={fetchDigest} disabled={loading} title={t('common.refresh')}>
+            <RefreshCw size={13} className={loading ? styles.spin : ''} />
+          </button>
         </div>
-        <button
-          className={styles.refreshBtn}
-          onClick={fetchDigest}
-          disabled={loading}
-          title={t('common.refresh')}
-        >
-          <RefreshCw size={13} className={loading ? styles.spin : ''} />
-        </button>
       </div>
 
-      {/* List */}
-      <div className={styles.list}>
+      <div className={styles.digestList}>
         {error && <div className={styles.error}>{t('common.error')}</div>}
-
         {!error && items.length === 0 && !loading && (
-          <div className={styles.empty}>{t('newsDigest.empty')}</div>
+          <div className={styles.empty}>{t('newsDigest.empty', 'No digest yet')}</div>
         )}
+        {loading && items.length === 0 && <div className={styles.empty}>{t('common.loading')}</div>}
 
-        {items.map(item => {
+        {items.map((item, i) => {
           const sources = parseSources(item.sources)
-          const expanded = expandedIds.has(item.id)
-
           return (
-            <div key={item.id} className={styles.card}>
-              {/* Card header */}
-              <div
-                className={styles.cardHeader}
-                onClick={() => toggleExpanded(item.id)}
-              >
-                <div className={styles.cardTop}>
-                  <span className={styles.categoryBadge}>{item.category}</span>
-                  <span className={styles.time}>{timeAgo(item.created_at, t)}</span>
+            <div key={item.id} className={styles.digestItem}>
+              <span className={styles.digestNum}>{String(i + 1).padStart(2, '0')}</span>
+              <div className={styles.digestBody}>
+                <div className={styles.digestHeadline}>{item.title}</div>
+                <div className={styles.digestSummary}>{item.summary}</div>
+                <div className={styles.digestMeta}>
+                  <span className={styles.digestSource}>{item.category}</span>
+                  <span className={styles.digestTime}>· {timeAgo(item.created_at, t)}</span>
                 </div>
-                <div className={styles.cardTitleRow}>
-                  <span className={styles.cardTitle}>{item.title}</span>
-                  <button className={styles.expandBtn}>
-                    {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                  </button>
-                </div>
+                {sources.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                    {sources.map((s, j) => (
+                      <a key={j} href={s.link} target="_blank" rel="noopener noreferrer" className={styles.digestLink}>
+                        <ExternalLink size={10} /> {s.channel}
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
-
-              {/* Expanded: summary + sources */}
-              {expanded && (
-                <div className={styles.cardBody}>
-                  <p className={styles.summary}>{item.summary}</p>
-                  {sources.length > 0 && (
-                    <div className={styles.sources}>
-                      {sources.map((s, i) => (
-                        <a
-                          key={i}
-                          href={s.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={styles.sourceLink}
-                        >
-                          <ExternalLink size={11} />
-                          {s.channel}
-                        </a>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           )
         })}

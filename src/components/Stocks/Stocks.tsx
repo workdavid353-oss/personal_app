@@ -1,6 +1,6 @@
 // src/components/Stocks/Stocks.tsx
 import { useState, useEffect } from 'react'
-import { Plus, RefreshCw } from 'lucide-react'
+import { Plus, RefreshCw, TrendingUp } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
@@ -82,26 +82,26 @@ export default function Stocks() {
   }
 
   return (
-    <div className={styles.container}>
-      {/* Toolbar */}
-      <div className={styles.toolbar}>
-        <span className={styles.toolbarLabel}>{t('stocks.title')}</span>
-
-        <div className={styles.rangeBtns}>
-          {([7, 30] as const).map(r => (
-            <button
-              key={r}
-              className={`${styles.rangeBtn} ${range === r ? styles.activeRange : ''}`}
-              onClick={() => setRange(r)}
-            >
-              {t('stocks.days', { n: r })}
-            </button>
-          ))}
+    <div
+      className="card card-accent"
+      style={{ '--accent': 'var(--tangerine)', '--accent-soft': 'var(--tangerine-soft)' } as React.CSSProperties}
+    >
+      <div className="card-head">
+        <span className="card-tag"><TrendingUp size={16} /></span>
+        <span className="card-title">{t('stocks.title', 'Watchlist')}</span>
+        <span className="card-subtitle">market open</span>
+        <div className="card-tools">
+          <div className={styles.rangeBtns}>
+            {([7, 30] as const).map(r => (
+              <button key={r} className={`${styles.rangeBtn} ${range === r ? styles.activeRange : ''}`} onClick={() => setRange(r)}>
+                {t('stocks.days', { n: r })}
+              </button>
+            ))}
+          </div>
+          <button className={`tool ${styles.refreshAll}`} onClick={fetchAll} title={t('stocks.refreshAll')}>
+            <RefreshCw size={13} />
+          </button>
         </div>
-
-        <button className={styles.refreshAll} onClick={fetchAll} title={t('stocks.refreshAll')}>
-          <RefreshCw size={13} />
-        </button>
       </div>
 
       {/* Add stock */}
@@ -144,3 +144,4 @@ export default function Stocks() {
     </div>
   )
 }
+

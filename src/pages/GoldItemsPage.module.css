@@ -1,85 +1,22 @@
+/* ─── Page wrapper ─── */
 .content {
-  flex: 1;
   padding: 24px;
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  height: 100%;
+  box-sizing: border-box;
 }
-
-/* ─── Card ─── */
-.tableCard {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  font-family: 'DM Sans', sans-serif;
-}
-
-.cardHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-  gap: 12px;
-}
-
-.cardTitle {
-  font-family: 'DM Mono', monospace;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text2);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-right: 10px;
-}
-
-.cardSub {
-  font-size: 11px;
-  color: var(--text3);
-}
-
-.headerRight {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.refreshedAt {
-  font-family: 'DM Mono', monospace;
-  font-size: 10px;
-  color: var(--text3);
-}
-
-.refreshBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text3);
-  cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
-}
-
-.refreshBtn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
-.refreshBtn:disabled { opacity: 0.4; cursor: default; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { animation: spin 0.8s linear infinite; }
 
-/* ─── Table wrapper ─── */
-.tableWrap {
-  overflow-x: auto;
+.refreshedAt {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-4);
 }
+
+/* ─── Table wrapper ─── */
+.tableWrap { overflow-x: auto; }
 
 .table {
   width: 100%;
@@ -91,107 +28,64 @@
 .th {
   padding: 8px 14px;
   text-align: left;
-  font-family: 'DM Mono', monospace;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text3);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 10.5px; font-weight: 600;
+  color: var(--ink-4);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--hair);
   white-space: nowrap;
-  cursor: pointer;
-  user-select: none;
+  cursor: pointer; user-select: none;
   transition: color 0.15s;
 }
-
-.th:hover { color: var(--accent); }
-
+.th:hover { color: var(--ink); }
 .thNum { text-align: right; }
-
-.thInner {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
+.thInner { display: inline-flex; align-items: center; gap: 4px; }
 .sortInactive { opacity: 0.3; }
 
 /* ─── Rows ─── */
-.tr {
-  transition: background 0.1s;
-}
+.tr { transition: background 0.1s; }
+.tr:hover { background: var(--surface-2); }
+.tr:not(:last-child) .td { border-bottom: 1px dashed var(--hair-2); }
 
-.tr:hover {
-  background: var(--hover, rgba(0,0,0,0.03));
-}
-
-.tr:not(:last-child) .td {
-  border-bottom: 1px solid var(--border);
-}
-
-.td {
-  padding: 9px 14px;
-  color: var(--text);
-  vertical-align: middle;
-}
-
-.tdMono {
-  font-family: 'DM Mono', monospace;
-  font-size: 12px;
-}
-
+.td { padding: 9px 14px; color: var(--ink-2); vertical-align: middle; font-size: 13px; }
+.tdMono { font-family: var(--font-mono); font-size: 12px; }
 .tdNum { text-align: right; }
 
 .profit {
-  color: #16a34a;
+  color: oklch(45% 0.14 150);
   font-weight: 600;
 }
+[data-mode="dark"] .profit { color: var(--sage); }
 
 /* ─── Link ─── */
 .link {
-  display: inline-flex;
-  align-items: center;
-  color: var(--accent);
-  text-decoration: none;
-  padding: 2px 4px;
-  border-radius: 4px;
-  transition: opacity 0.15s;
+  display: inline-flex; align-items: center;
+  color: var(--ink-3); text-decoration: none;
+  padding: 2px 4px; border-radius: 4px;
+  transition: color 0.15s;
 }
-
-.link:hover { opacity: 0.7; }
+.link:hover { color: var(--accent); }
 
 /* ─── States ─── */
-.loadingRow,
-.emptyRow {
-  text-align: center;
-  color: var(--text3);
-  font-size: 13px;
-  padding: 32px;
+.loadingRow, .emptyRow {
+  text-align: center; color: var(--ink-4);
+  font-size: 13px; padding: 32px;
 }
 
 .error {
-  text-align: center;
-  color: #ef4444;
-  font-size: 12px;
-  padding: 16px;
+  text-align: center; color: var(--coral);
+  font-size: 12px; padding: 16px;
 }
 
 /* ─── Footer ─── */
 .footer {
   padding: 8px 16px;
-  font-size: 11px;
-  color: var(--text3);
-  border-top: 1px solid var(--border);
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
+  font-size: 10.5px; color: var(--ink-4);
+  border-top: 1px solid var(--hair);
 }
 
 /* ─── Mobile ─── */
 @media (max-width: 768px) {
-  .content {
-    padding: 12px;
-  }
-
-  .cardSub {
-    display: none;
-  }
+  .content { padding: 12px; }
 }

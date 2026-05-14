@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { CheckSquare, Plus, Filter } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import type { Todo } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
@@ -191,14 +192,15 @@ function TodoItem({ todo, onToggle, onDelete, onUpdate, dragHandleProps, isDragO
 
   return (
     <div
-      className={`${styles.item} ${todo.completed ? styles.completed : ''} ${isDragOver ? styles.dragOver : ''}`}
+      className={`${styles.item} ${isDragOver ? styles.dragOver : ''}`}
+      data-done={todo.completed}
       {...dragHandleProps}
     >
       <div className={styles.itemMain}>
-        <div className={`${styles.dragHandle}`} title={t('todos.dragSort')}>⠿</div>
+        <div className={styles.dragHandle} title={t('todos.dragSort')}>⠿</div>
 
         <button
-          className={`${styles.checkbox} ${todo.completed ? styles.checked : ''}`}
+          className={styles.checkbox}
           onClick={() => onToggle(todo.id, todo.completed)}
           aria-label={t('todos.markComplete')}
         >
@@ -259,6 +261,7 @@ export default function Todos() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
+  const [draft, setDraft] = useState('')
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('active')
   const [filterTag, setFilterTag] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState<'order' | 'priority' | 'due'>('order')
@@ -378,22 +381,29 @@ export default function Todos() {
 
   const activeCount = todos.filter(t => !t.completed).length
 
+  async function handleQuickAdd() {
+    const title = draft.trim()
+    if (!title) return
+    setDraft('')
+    await handleAdd({ title, content: null, priority: 'medium', due_date: null, tags: null })
+  }
+
   return (
-    <div className={styles.container}>
-      {/* Header */}
-      <div className={styles.header}>
-        <div className={styles.headerLeft}>
-          <h2 className={styles.title}>Todos</h2>
-          {activeCount > 0 && (
-            <span className={styles.badge}>{activeCount}</span>
-          )}
+    <div
+      className="card card-accent"
+      style={{ '--accent': 'var(--coral)', '--accent-soft': 'var(--coral-soft)' } as React.CSSProperties}
+    >
+      <div className="card-head">
+        <span className="card-tag"><CheckSquare size={16} /></span>
+        <span className="card-title">{t('todos.title', 'Today')}</span>
+        <span className="card-subtitle">{activeCount} left</span>
+        <div className="card-tools">
+          <button className="tool" onClick={() => setShowForm(x => !x)} title={t('todos.addNew')}><Plus size={14} /></button>
+          <button className="tool" title="Filter"><Filter size={14} /></button>
         </div>
-        <button className={styles.addBtn} onClick={() => setShowForm(x => !x)}>
-          {showForm ? '✕' : t('todos.addNew')}
-        </button>
       </div>
 
-      {/* Form */}
+      {/* Full add form */}
       {showForm && (
         <AddTodoForm
           onAdd={handleAdd}
@@ -402,59 +412,53 @@ export default function Todos() {
         />
       )}
 
-      {/* Filters */}
-      <div className={styles.filters}>
-        <div className={styles.filterTabs}>
-          {(['active', 'all', 'completed'] as const).map(f => (
-            <button
-              key={f}
-              className={`${styles.filterTab} ${filter === f ? styles.activeTab : ''}`}
-              onClick={() => setFilter(f)}
-            >
-              {f === 'active' ? t('todos.active') : f === 'all' ? t('common.all') : t('todos.completed')}
-            </button>
-          ))}
-        </div>
-
+      {/* Tabs */}
+      <div className={styles.todoTabs}>
+        {(['active', 'completed', 'all'] as const).map(f => (
+          <button
+            key={f}
+            className={styles.todoTab}
+            data-active={filter === f}
+            onClick={() => setFilter(f)}
+          >
+            {f === 'active' ? t('todos.active', 'Active') : f === 'all' ? t('common.all', 'All') : t('todos.completed', 'Done')}
+          </button>
+        ))}
         <select
           className={styles.sortSelect}
           value={sortBy}
           onChange={e => setSortBy(e.target.value as typeof sortBy)}
         >
-          <option value="order">{t('todos.manualOrder')}</option>
-          <option value="priority">{t('todos.byPriority')}</option>
-          <option value="due">{t('todos.byDueDate')}</option>
+          <option value="order">{t('todos.manualOrder', 'Manual')}</option>
+          <option value="priority">{t('todos.byPriority', 'Priority')}</option>
+          <option value="due">{t('todos.byDueDate', 'Due date')}</option>
         </select>
       </div>
 
       {/* Tag filter */}
       {allTags.length > 0 && (
         <div className={styles.tagFilter}>
-          <button
-            className={`${styles.tagFilterBtn} ${!filterTag ? styles.activeTag : ''}`}
-            onClick={() => setFilterTag(null)}
-          >
-            {t('common.all')}
+          <button className={`${styles.tagFilterBtn} ${!filterTag ? styles.activeTag : ''}`} onClick={() => setFilterTag(null)}>
+            {t('common.all', 'All')}
           </button>
-          {allTags.map(t => (
+          {allTags.map(tag => (
             <button
-              key={t}
-              className={`${styles.tagFilterBtn} ${filterTag === t ? styles.activeTag : ''}`}
-              onClick={() => setFilterTag(filterTag === t ? null : t)}
+              key={tag}
+              className={`${styles.tagFilterBtn} ${filterTag === tag ? styles.activeTag : ''}`}
+              onClick={() => setFilterTag(filterTag === tag ? null : tag)}
             >
-              {t}
+              {tag}
             </button>
           ))}
         </div>
       )}
 
       {/* List */}
-      <div className={styles.list}>
+      <div className={styles.todoList}>
         {loading && <div className={styles.empty}>{t('common.loading')}</div>}
-        {error && <div className={styles.errorMsg}>{error}</div>}
         {!loading && !error && visible.length === 0 && (
           <div className={styles.empty}>
-            {filter === 'completed' ? t('todos.noCompleted') : t('todos.noTasks')}
+            {filter === 'completed' ? t('todos.noCompleted', 'No completed tasks') : t('todos.noTasks', 'No tasks')}
           </div>
         )}
         {visible.map(todo => (
@@ -477,24 +481,16 @@ export default function Todos() {
         ))}
       </div>
 
-      {/* Footer */}
-      {todos.length > 0 && (
-        <div className={styles.footer}>
-          <span>{activeCount} {t('todos.remaining')}</span>
-          {todos.some(t => t.completed) && (
-            <button
-              className={styles.clearBtn}
-              onClick={async () => {
-                const completedIds = todos.filter(t => t.completed).map(t => t.id)
-                await supabase.from('table_todos').delete().in('id', completedIds)
-                setTodos(prev => prev.filter(t => !t.completed))
-              }}
-            >
-              {t('todos.clearCompleted')}
-            </button>
-          )}
-        </div>
-      )}
+      {/* Quick add */}
+      <div className={styles.todoInput}>
+        <Plus size={14} color="var(--ink-4)" />
+        <input
+          placeholder={t('todos.addPlaceholder', 'Add a task…')}
+          value={draft}
+          onChange={e => setDraft(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') handleQuickAdd() }}
+        />
+      </div>
     </div>
   )
 }

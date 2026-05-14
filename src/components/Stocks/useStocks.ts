@@ -14,12 +14,15 @@ export interface StockQuote {
   high: number
   low: number
   prevClose: number
+  volume: number
 }
 
 export interface StockProfile {
   name: string
   logo: string
   exchange: string
+  marketCap: number  // millions USD
+  industry: string
 }
 
 export interface StockMetrics {
@@ -85,27 +88,34 @@ export function useStocks(favorites: string[]) {
       if (!quoteJson.c) throw new Error('notFound')
 
       const quote: StockQuote = {
-        price: quoteJson.c,
-        change: quoteJson.d,
+        price:     quoteJson.c,
+        change:    quoteJson.d,
         changePct: quoteJson.dp,
-        open: quoteJson.o,
-        high: quoteJson.h,
-        low: quoteJson.l,
+        open:      quoteJson.o,
+        high:      quoteJson.h,
+        low:       quoteJson.l,
         prevClose: quoteJson.pc,
+        volume:    quoteJson.v ?? 0,
       }
 
       const profile: StockProfile | null = profileJson.name
-        ? { name: profileJson.name, logo: profileJson.logo ?? '', exchange: profileJson.exchange ?? '' }
+        ? {
+            name:      profileJson.name,
+            logo:      profileJson.logo ?? '',
+            exchange:  profileJson.exchange ?? '',
+            marketCap: profileJson.marketCapitalization ?? 0,
+            industry:  profileJson.finnhubIndustry ?? '',
+          }
         : null
 
       const m = metricsJson.metric
       const metrics: StockMetrics | null = m
         ? {
             weekHigh52: m['52WeekHigh'],
-            weekLow52: m['52WeekLow'],
-            beta: m.beta,
-            forwardPE: m.forwardPE,
-            eps: m.epsTTM,
+            weekLow52:  m['52WeekLow'],
+            beta:       m.beta,
+            forwardPE:  m.forwardPE,
+            eps:        m.epsTTM,
           }
         : null
 
@@ -121,7 +131,7 @@ export function useStocks(favorites: string[]) {
         }))
         .reverse()
 
-const data: StockData = { quote, profile, metrics, history, loading: false, error: null }
+      const data: StockData = { quote, profile, metrics, history, loading: false, error: null }
       cache[sym] = { data, ts: Date.now() }
       setStocks(prev => ({ ...prev, [sym]: data }))
     } catch (err: any) {

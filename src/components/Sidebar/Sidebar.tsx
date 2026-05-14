@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  Pencil, Check, EyeOff, Eye, Trash2, KeyRound, User, GripVertical, X, Menu, ChevronDown
+  Pencil, Check, EyeOff, Eye, Trash2, KeyRound, User, GripVertical, X, Menu, ChevronDown, Search, LogOut
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import type { table_links_group, table_links } from '../../lib/supabase'
@@ -10,6 +10,14 @@ import { useMasterPassword } from '../../context/MasterPasswordContext'
 import { encryptPassword, decryptPassword, isEncrypted } from '../../lib/crypto'
 import { WidgetSettings } from '../WidgetSettings/WidgetSettings'
 import styles from './Sidebar.module.css'
+
+const GROUP_PALETTE = [
+  'var(--sage)', 'var(--sky)', 'var(--coral)', 'var(--tangerine)',
+  'var(--lavender)', 'var(--magenta)', 'var(--lime)',
+]
+function groupColor(id: number) {
+  return GROUP_PALETTE[Math.abs(id) % GROUP_PALETTE.length]
+}
 
 // ─── Extended types ───────────────────────────────────────────
 interface GroupExt extends table_links_group {
@@ -190,9 +198,13 @@ function LinkModal({ link, groupId, onSave, onDelete, onClose }: LinkModalProps)
 }
 
 // ─── Main Sidebar ─────────────────────────────────────────────
-export function Sidebar() {
+interface SidebarProps { onToast?: (msg: string) => void }
+
+export function Sidebar({ onToast }: SidebarProps) {
   const { t } = useTranslation()
-  const { user } = useAuth()
+  const { user, signOut } = useAuth()
+  const [searchQuery, setSearchQuery] = useState('')
+  const searchRef = useRef<HTMLInputElement>(null)
   const { masterPassword, setMasterPassword } = useMasterPassword()
   const [masterPwInput, setMasterPwInput] = useState('')
   const [masterPwModal, setMasterPwModal] = useState<'set' | 'decrypt' | null>(null)
@@ -325,18 +337,31 @@ export function Sidebar() {
     setDragOverGroupId(null)
   }
 
+  // ─── ⌘K shortcut to focus search ───────────────────────────
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        searchRef.current?.focus()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
   // ── copy to clipboard (with decryption if needed) ──
-  async function copyToClipboard(text: string) {
+  async function copyToClipboard(text: string, label?: string) {
     if (!isEncrypted(text)) {
       navigator.clipboard.writeText(text)
+      if (label) onToast?.(label)
       return
     }
     if (masterPassword) {
       try {
         const plain = await decryptPassword(text, masterPassword)
         navigator.clipboard.writeText(plain)
+        if (label) onToast?.(label)
       } catch {
-        // master password changed — prompt again
         setMasterPassword(null)
         setPendingDecryptText(text)
         setMasterPwError(false)
@@ -381,9 +406,21 @@ export function Sidebar() {
 
   const visibleGroups = editMode ? groups : groups.filter(g => g.visible !== false)
 
+  // search filtering
+  const filteredGroups = searchQuery.trim()
+    ? visibleGroups.map(g => ({
+        ...g,
+        _links: (editMode ? links.filter(l => l.group_link_id === g.id) : links.filter(l => l.group_link_id === g.id && l.visible !== false))
+          .filter(l => l.link_name.toLowerCase().includes(searchQuery.toLowerCase())),
+      })).filter(g => g._links.length > 0)
+    : null
+
+  const userInitial = user?.email?.charAt(0).toUpperCase() ?? 'U'
+  const userName = user?.email?.split('@')[0] ?? ''
+
   return (
     <>
-      {/* Mobile hamburger — fixed, only visible on mobile when drawer is closed */}
+      {/* Mobile hamburger */}
       <button
         className={`${styles.mobileHamburger} ${mobileOpen ? styles.mobileHamburgerHidden : ''}`}
         onClick={() => setMobileOpen(true)}
@@ -392,22 +429,24 @@ export function Sidebar() {
         <Menu size={18} />
       </button>
 
-      {/* Backdrop */}
       {mobileOpen && <div className={styles.backdrop} onClick={() => setMobileOpen(false)} />}
 
     <nav className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''} ${mobileOpen ? styles.mobileOpen : ''}`}>
       {/* Header */}
       <div className={styles.sidebarHeader}>
-        <button
-          className={styles.hamburger}
-          onClick={handleHamburgerClick}
-          title={collapsed ? t('sidebar.expand') : t('sidebar.collapse')}
-        >
-          <Menu size={16} />
-        </button>
-
-        {!collapsed && (
+        {collapsed ? (
+          <button className={styles.hamburger} onClick={handleHamburgerClick}>
+            <Menu size={16} />
+          </button>
+        ) : (
           <>
+            <button
+              className={styles.hamburger}
+              onClick={handleHamburgerClick}
+              title={t('sidebar.collapse')}
+            >
+              <Menu size={16} />
+            </button>
             <span className={styles.sidebarTitle}>{t('sidebar.title')}</span>
             <button
               className={`${styles.editToggle} ${masterPassword ? styles.editActive : ''}`}
@@ -426,11 +465,25 @@ export function Sidebar() {
               onClick={() => setEditMode(x => !x)}
               title={editMode ? t('sidebar.finishEdit') : t('sidebar.editMode')}
             >
-              {editMode ? <><Check size={13} /> {t('sidebar.finishEdit')}</> : <><Pencil size={13} /> {t('sidebar.editMode')}</>}
+              {editMode ? <Check size={13} /> : <Pencil size={13} />}
             </button>
           </>
         )}
       </div>
+
+      {/* Search */}
+      {!collapsed && (
+        <div className={styles.sidebarSearch}>
+          <Search size={13} color="var(--ink-4)" />
+          <input
+            ref={searchRef}
+            placeholder={t('sidebar.search', 'Search links…')}
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+          />
+          <span className={styles.sidebarKbd}>⌘K</span>
+        </div>
+      )}
 
       {!collapsed && loading && <div className={styles.loading}>{t('common.loading')}</div>}
 
@@ -465,10 +518,13 @@ export function Sidebar() {
       {!collapsed && (
         <>
           <div className={styles.groupsList}>
-        {visibleGroups.map(group => {
-          const groupLinks = links.filter(l => l.group_link_id === group.id)
-          const visibleLinks = editMode ? groupLinks : groupLinks.filter(l => l.visible !== false)
+        {(filteredGroups ?? visibleGroups).map(group => {
+          const groupLinks = filteredGroups
+            ? (group as any)._links
+            : (editMode ? links.filter(l => l.group_link_id === group.id) : links.filter(l => l.group_link_id === group.id && l.visible !== false))
+          const visibleLinks = groupLinks
           const isGroupCollapsed = collapsedGroups.has(group.id)
+          const color = groupColor(group.id)
 
           return (
             <div
@@ -483,8 +539,10 @@ export function Sidebar() {
               {/* Group header */}
               <div className={styles.groupHeader} onClick={() => !editMode && toggleGroup(group.id)}>
                 {editMode && <span className={styles.dragHandle}><GripVertical size={14} /></span>}
+                <span className={styles.groupDot} style={{ '--accent': color } as React.CSSProperties} />
                 <span className={styles.groupName}>{group.group_name}</span>
                 {group.visible === false && <span className={styles.hiddenBadge}>{t('common.hidden')}</span>}
+                <span className={styles.groupCount}>{visibleLinks.length}</span>
                 {!editMode && (
                   <ChevronDown
                     size={12}
@@ -530,14 +588,14 @@ export function Sidebar() {
                           {link.username && (
                             <button
                               className={styles.iconBtn}
-                              onClick={() => copyToClipboard(link.username!)}
+                              onClick={() => copyToClipboard(link.username!, `Username for ${link.link_name} copied`)}
                               title={t('sidebar.copyUsername', { name: link.username })}
                             ><User size={13} /></button>
                           )}
                           {link.password && (
                             <button
                               className={styles.iconBtn}
-                              onClick={() => copyToClipboard(link.password!)}
+                              onClick={() => copyToClipboard(link.password!, `Password for ${link.link_name} copied`)}
                               title={t('sidebar.copyPassword')}
                             ><KeyRound size={13} /></button>
                           )}
@@ -578,14 +636,14 @@ export function Sidebar() {
                             {link.username && (
                               <button
                                 className={styles.credBtn}
-                                onClick={() => copyToClipboard(link.username!)}
+                                onClick={() => copyToClipboard(link.username!, `Username for ${link.link_name} copied`)}
                                 title={t('sidebar.copyUsername', { name: link.username })}
                               ><User size={12} /></button>
                             )}
                             {link.password && (
                               <button
                                 className={styles.credBtn}
-                                onClick={() => copyToClipboard(link.password!)}
+                                onClick={() => copyToClipboard(link.password!, `Password for ${link.link_name} copied`)}
                                 title={t('sidebar.copyPassword')}
                               ><KeyRound size={12} /></button>
                             )}
@@ -623,6 +681,20 @@ export function Sidebar() {
         <WidgetSettings />
       </div>
         </>
+      )}
+
+      {/* Footer with user info */}
+      {!collapsed && user && (
+        <div className={styles.sidebarFoot}>
+          <div className={styles.sidebarAvatar}>{userInitial}</div>
+          <div className={styles.sidebarUser}>
+            <div className={styles.sidebarUserName}>{userName}</div>
+            <div className={styles.sidebarUserEmail}>{user.email}</div>
+          </div>
+          <button className={styles.editToggle} onClick={signOut} title={t('app.logout', 'Sign out')}>
+            <LogOut size={13} />
+          </button>
+        </div>
       )}
 
       {/* Master password modal */}

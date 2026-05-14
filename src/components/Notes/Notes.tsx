@@ -1,6 +1,6 @@
 // src/components/Notes/Notes.tsx
 import { useRef } from 'react'
-import { Plus, Loader2 } from 'lucide-react'
+import { Plus, Loader2, FileText } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNotes } from './useNotes'
 import NoteItem from './NoteItem'
@@ -20,20 +20,22 @@ export default function Notes() {
   const handleDragEnd = () => { dragIndex.current = null }
 
   return (
-    <div className={styles.notesContainer}>
-      {/* Toolbar */}
-      <div className={styles.notesToolbar}>
-        <span className={styles.notesLabel}>Note</span>
-        {error && <span className={styles.errorBadge}>{t('common.error')}</span>}
-        <button className={styles.addNoteBtn} onClick={addNote} disabled={loading}>
-          {loading
-            ? <Loader2 size={14} className={styles.spin} />
-            : <Plus size={14} />}
-          <span>{t('notes.new')}</span>
-        </button>
+    <div
+      className="card card-accent"
+      style={{ '--accent': 'var(--sun)', '--accent-soft': 'var(--sun-soft)' } as React.CSSProperties}
+    >
+      <div className="card-head">
+        <span className="card-tag"><FileText size={16} /></span>
+        <span className="card-title">{t('notes.title', 'Notes')}</span>
+        <span className="card-subtitle">scratch pad</span>
+        <div className="card-tools">
+          {error && <span style={{ fontSize: 11, color: 'var(--coral)' }}>{t('common.error')}</span>}
+          <button className="tool" onClick={addNote} disabled={loading} title={t('notes.new')}>
+            {loading ? <Loader2 size={13} className={styles.spin} /> : <Plus size={13} />}
+          </button>
+        </div>
       </div>
 
-      {/* List */}
       <div className={styles.notesList}>
         {notes.map((note, index) => (
           <NoteItem

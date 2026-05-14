@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+import { CloudSun, MapPin } from 'lucide-react'
 import styles from './Weather.module.css'
 
 // ─── Types ────────────────────────────────────────────────────
@@ -164,19 +165,22 @@ export default function Weather() {
   const isCurrentFavorite = favorites.some(f => f.name === activeLocation)
   const sea = data ? seaState(data.current.wind_kph) : null
 
+  const subtitle = data ? data.location.name : 'today'
+
   return (
-    <div className={styles.container}>
-      {/* ── Header ── */}
-      <div className={styles.header}>
-        <h2 className={styles.title}>Weather</h2>
-        <button
-          className={styles.geoBtn}
-          onClick={fetchByLocation}
-          title={t('weather.currentLocation')}
-          disabled={geoLoading}
-        >
-          {geoLoading ? '...' : '📍'}
-        </button>
+    <div
+      className="card card-accent"
+      style={{ '--accent': 'var(--sky)', '--accent-soft': 'var(--sky-soft)' } as React.CSSProperties}
+    >
+      <div className="card-head">
+        <span className="card-tag"><CloudSun size={16} /></span>
+        <span className="card-title">{t('weather.title', 'Weather')}</span>
+        <span className="card-subtitle">{subtitle}</span>
+        <div className="card-tools">
+          <button className="tool" onClick={fetchByLocation} disabled={geoLoading} title={t('weather.currentLocation')}>
+            <MapPin size={14} />
+          </button>
+        </div>
       </div>
 
       {/* ── Search ── */}
@@ -240,91 +244,57 @@ export default function Weather() {
       {loading && <div className={styles.empty}>{t('common.loading')}</div>}
       {error && <div className={styles.errorMsg}>{error}</div>}
 
-      {/* ── Main Weather ── */}
+      {/* Main weather */}
       {data && !loading && (
         <>
-          {/* Current */}
-          <div className={styles.current}>
-            <div className={styles.currentTop}>
-              <div>
-                <div className={styles.cityName}>{data.location.name}</div>
-                <div className={styles.conditionText}>{data.current.condition.text}</div>
-              </div>
-              <img
-                src={`https:${data.current.condition.icon}`}
-                alt={data.current.condition.text}
-                className={styles.weatherIcon}
-              />
+          <div className={styles.hero}>
+            <div className={styles.temp}>
+              {Math.round(data.current.temp_c)}<sup>°</sup>
             </div>
-
-            <div className={styles.tempRow}>
-              <span className={styles.temp}>{Math.round(data.current.temp_c)}°</span>
-              <span className={styles.feels}>{t('weather.feelsLike', { temp: Math.round(data.current.feelslike_c) })}</span>
+            <div className={styles.meta}>
+              <div className={styles.cityName}>{data.location.name}</div>
+              <div className={styles.conditionText}>{data.current.condition.text} · {t('weather.feelsLike', { temp: Math.round(data.current.feelslike_c) })}</div>
             </div>
-
-            {/* Stats grid */}
-            <div className={styles.statsGrid}>
-              <div className={styles.stat}>
-                <span className={styles.statIcon}>💧</span>
-                <span className={styles.statVal}>{data.current.humidity}%</span>
-                <span className={styles.statLabel}>{t('weather.humidity')}</span>
-              </div>
-              <div className={styles.stat}>
-                <span className={styles.statIcon}>💨</span>
-                <span className={styles.statVal}>{Math.round(data.current.wind_kph)} {t('weather.kmh')}</span>
-                <span className={styles.statLabel}>{WIND_DIR[data.current.wind_dir] || data.current.wind_dir}</span>
-              </div>
-              <div className={styles.stat}>
-                <span className={styles.statIcon}>👁</span>
-                <span className={styles.statVal}>{data.current.vis_km} ק"מ</span>
-                <span className={styles.statLabel}>{t('weather.visibility')}</span>
-              </div>
-              <div className={styles.stat}>
-                <span className={styles.statIcon}>☀️</span>
-                <span className={styles.statVal}>UV {data.current.uv}</span>
-                <span className={styles.statLabel}>{t('weather.uv')}</span>
-              </div>
-            </div>
-
-            {/* Sea state */}
-            {sea && (
-              <div className={styles.seaRow} style={{ '--sea-color': sea.color } as React.CSSProperties}>
-                <span>🌊</span>
-                <span className={styles.seaLabel}>{sea.label}</span>
-                <span className={styles.seaNote}>{t('weather.seaByWind')}</span>
-              </div>
-            )}
           </div>
 
-          {/* ── 5-day forecast ── */}
-          <div className={styles.forecastTitle}>{t('weather.forecast')}</div>
           <div className={styles.forecast}>
             {data.forecast.forecastday.map((day, i) => (
-              <div key={day.date} className={styles.forecastDay}>
+              <div key={day.date} className={styles.forecastDay} data-today={i === 0}>
                 <span className={styles.dayName}>{getDayName(day.date, i)}</span>
-                <img
-                  src={`https:${day.day.condition.icon}`}
-                  alt={day.day.condition.text}
-                  className={styles.forecastIcon}
-                />
+                <img src={`https:${day.day.condition.icon}`} alt={day.day.condition.text} className={styles.forecastIcon} />
                 <div className={styles.forecastTemps}>
                   <span className={styles.maxTemp}>{Math.round(day.day.maxtemp_c)}°</span>
                   <span className={styles.minTemp}>{Math.round(day.day.mintemp_c)}°</span>
                 </div>
-                {day.day.daily_chance_of_rain > 20 && (
-                  <span className={styles.rain}>🌧 {day.day.daily_chance_of_rain}%</span>
-                )}
               </div>
             ))}
           </div>
 
-          {/* Sunrise / Sunset */}
-          <div className={styles.astro}>
-            <span>🌅 {data.forecast.forecastday[0].astro.sunrise}</span>
-            <span>🌇 {data.forecast.forecastday[0].astro.sunset}</span>
+          <div className={styles.statsGrid}>
+            <div className={styles.stat}>
+              <span className={styles.statLabel}>{t('weather.wind', 'Wind')}</span>
+              <span className={styles.statVal}>{Math.round(data.current.wind_kph)} {t('weather.kmh', 'km/h')}</span>
+            </div>
+            <div className={styles.stat}>
+              <span className={styles.statLabel}>{t('weather.humidity', 'Humidity')}</span>
+              <span className={styles.statVal}>{data.current.humidity}%</span>
+            </div>
+            <div className={styles.stat}>
+              <span className={styles.statLabel}>UV</span>
+              <span className={styles.statVal}>{data.current.uv}</span>
+            </div>
           </div>
+
+          {sea && (
+            <div className={styles.seaRow} style={{ '--sea-color': sea.color } as React.CSSProperties}>
+              <span>🌊</span>
+              <span className={styles.seaLabel}>{sea.label}</span>
+              <span className={styles.seaNote}>{t('weather.seaByWind')}</span>
+            </div>
+          )}
         </>
       )}
+
     </div>
   )
 }

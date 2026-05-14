@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { RefreshCw, Newspaper } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import styles from './News.module.css'
 
@@ -37,7 +38,6 @@ export default function News() {
   useEffect(() => {
     fetchNews()
 
-    // realtime — מתעדכן אוטומטית כשהסקריפט מוסיף חדשות
     const channel = supabase
       .channel('news-changes')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'table_news' }, payload => {
@@ -60,7 +60,6 @@ export default function News() {
     setLoading(false)
   }
 
-  // ערוצים ייחודיים לפילטר
   const channels = Array.from(
     new Map(items.map(i => [i.channel, i.channel_title || i.channel])).entries()
   )
@@ -68,11 +67,19 @@ export default function News() {
   const visible = filterChannel ? items.filter(i => i.channel === filterChannel) : items
 
   return (
-    <div className={styles.container}>
-      {/* Header */}
-      <div className={styles.header}>
-        <h2 className={styles.title}>Telegram News</h2>
-        <button className={styles.refreshBtn} onClick={fetchNews} title={t('news.refresh')}>↻</button>
+    <div
+      className="card card-accent"
+      style={{ '--accent': 'var(--magenta)', '--accent-soft': 'var(--magenta-soft)' } as React.CSSProperties}
+    >
+      <div className="card-head">
+        <span className="card-tag"><Newspaper size={16} /></span>
+        <span className="card-title">{t('news.title', 'News')}</span>
+        <span className="card-subtitle">Telegram</span>
+        <div className="card-tools">
+          <button className={`tool ${loading ? styles.spin : ''}`} onClick={fetchNews} title={t('news.refresh')}>
+            <RefreshCw size={13} />
+          </button>
+        </div>
       </div>
 
       {/* Channel filter */}
@@ -98,7 +105,7 @@ export default function News() {
 
       {/* List */}
       <div className={styles.list}>
-        {loading && <div className={styles.empty}>{t('news.loading')}</div>}
+        {loading && <div className={styles.empty}>{t('common.loading')}</div>}
         {error && <div className={styles.errorMsg}>{error}</div>}
         {!loading && !error && visible.length === 0 && (
           <div className={styles.empty}>
@@ -113,19 +120,11 @@ export default function News() {
 
           return (
             <article key={item.id} className={styles.item}>
-              {/* Image */}
               {item.image_url && (
-                <img
-                  src={item.image_url}
-                  alt=""
-                  className={styles.image}
-                  loading="lazy"
-                />
+                <img src={item.image_url} alt="" className={styles.image} loading="lazy" />
               )}
 
-              {/* Body */}
               <div className={styles.body}>
-                {/* Channel name */}
                 <div className={styles.channelRow}>
                   <span className={styles.channelAvatar}>
                     {channelInitial(item.channel_title, item.channel)}
@@ -136,14 +135,12 @@ export default function News() {
                   <span className={styles.time}>{timeAgo(item.published_at, t)}</span>
                 </div>
 
-                {/* Text */}
                 {item.text && (
                   <p className={`${styles.text} ${!isExpanded && isLong ? styles.truncated : ''}`}>
                     {item.text}
                   </p>
                 )}
 
-                {/* Show more / less */}
                 {isLong && (
                   <button
                     className={styles.expandBtn}
@@ -153,7 +150,6 @@ export default function News() {
                   </button>
                 )}
 
-                {/* Link to Telegram */}
                 <a
                   href={item.telegram_link}
                   target="_blank"
