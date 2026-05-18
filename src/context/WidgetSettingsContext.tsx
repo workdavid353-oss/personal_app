@@ -15,6 +15,11 @@ const DEFAULTS: WidgetMap = {
   stocks: true, newsDigest: true, bankRates: true, wiki: true, spanishReader: true,
 }
 
+const DEFAULT_COLLAPSED: Record<WidgetKey, boolean> = {
+  todos: true, weather: true, news: true, notes: true,
+  stocks: true, newsDigest: true, bankRates: true, wiki: true, spanishReader: true,
+}
+
 export const DEFAULT_LAYOUT: WidgetLayout = {
   col1: ['todos', 'bankRates', 'spanishReader'],
   col2: ['weather', 'newsDigest', 'wiki'],
@@ -45,20 +50,24 @@ interface WidgetSettingsCtx {
   widgetPrefs: WidgetPrefs
   prefsLoaded: boolean
   updateWidgetPref: (widgetKey: string, prefs: Record<string, string>) => Promise<void>
+  widgetCollapsed: Record<WidgetKey, boolean>
+  toggleCollapse: (key: WidgetKey) => Promise<void>
 }
 
 const Ctx = createContext<WidgetSettingsCtx>({
   widgets: DEFAULTS, toggle: () => {},
   widgetLayout: DEFAULT_LAYOUT, updateLayout: () => {},
   widgetPrefs: {}, prefsLoaded: false, updateWidgetPref: async () => {},
+  widgetCollapsed: DEFAULT_COLLAPSED, toggleCollapse: async () => {},
 })
 
 export function WidgetSettingsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
-  const [widgets, setWidgets]           = useState<WidgetMap>(DEFAULTS)
-  const [widgetLayout, setWidgetLayout] = useState<WidgetLayout>(DEFAULT_LAYOUT)
-  const [widgetPrefs, setWidgetPrefs]   = useState<WidgetPrefs>({})
-  const [prefsLoaded, setPrefsLoaded]   = useState(false)
+  const [widgets, setWidgets]               = useState<WidgetMap>(DEFAULTS)
+  const [widgetLayout, setWidgetLayout]     = useState<WidgetLayout>(DEFAULT_LAYOUT)
+  const [widgetPrefs, setWidgetPrefs]       = useState<WidgetPrefs>({})
+  const [prefsLoaded, setPrefsLoaded]       = useState(false)
+  const [widgetCollapsed, setWidgetCollapsed] = useState<Record<WidgetKey, boolean>>(DEFAULT_COLLAPSED)
 
   useEffect(() => {
     if (!user) { setPrefsLoaded(true); return }
@@ -84,7 +93,17 @@ export function WidgetSettingsProvider({ children }: { children: ReactNode }) {
         } else {
           if (data?.widgets)       setWidgets({ ...DEFAULTS, ...data.widgets })
           if (data?.widget_layout) setWidgetLayout(normalizeLayout(data.widget_layout))
-          if (data?.widget_prefs)  setWidgetPrefs(data.widget_prefs as WidgetPrefs)
+          if (data?.widget_prefs) {
+            const prefs = data.widget_prefs as WidgetPrefs
+            setWidgetPrefs(prefs)
+            if (prefs._collapsed) {
+              const parsed: Partial<Record<WidgetKey, boolean>> = {}
+              for (const [k, v] of Object.entries(prefs._collapsed)) {
+                parsed[k as WidgetKey] = v !== 'false'
+              }
+              setWidgetCollapsed({ ...DEFAULT_COLLAPSED, ...parsed })
+            }
+          }
         }
       } catch {
         // network failure — proceed with defaults
@@ -122,8 +141,21 @@ export function WidgetSettingsProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  async function toggleCollapse(key: WidgetKey) {
+    const updated = { ...widgetCollapsed, [key]: !widgetCollapsed[key] }
+    setWidgetCollapsed(updated)
+    if (user) {
+      const collapsedStrings: Record<string, string> = {}
+      for (const [k, v] of Object.entries(updated)) collapsedStrings[k] = String(v)
+      const updatedPrefs = { ...widgetPrefs, _collapsed: collapsedStrings }
+      setWidgetPrefs(updatedPrefs)
+      await supabase.from('user_settings')
+        .upsert({ user_id: user.id, widget_prefs: updatedPrefs }, { onConflict: 'user_id' })
+    }
+  }
+
   return (
-    <Ctx.Provider value={{ widgets, toggle, widgetLayout, updateLayout, widgetPrefs, prefsLoaded, updateWidgetPref }}>
+    <Ctx.Provider value={{ widgets, toggle, widgetLayout, updateLayout, widgetPrefs, prefsLoaded, updateWidgetPref, widgetCollapsed, toggleCollapse }}>
       {children}
     </Ctx.Provider>
   )

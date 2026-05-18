@@ -16,7 +16,7 @@ import News from './components/News/News'
 import Weather from './components/Weather/Weather'
 import LoginPage from './pages/LoginPage'
 import ProtectedRoute from './components/ProtectedRoute'
-import { LogOut, Sun, Moon } from 'lucide-react'
+import { LogOut, Sun, Moon, ChevronDown } from 'lucide-react'
 import styles from './App.module.css'
 import Stocks from './components/Stocks/Stocks'
 import NewsDigest from './components/NewsDigest/NewsDigest'
@@ -122,7 +122,7 @@ const WIDGET_COMPONENTS: Record<WidgetKey, ReactElement> = {
 }
 
 function Dashboard() {
-  const { widgets, widgetLayout, updateLayout } = useWidgetSettings()
+  const { widgets, widgetLayout, updateLayout, widgetCollapsed, toggleCollapse } = useWidgetSettings()
   const dragSrc = useRef<{ key: WidgetKey; col: ColKey } | null>(null)
   const [dragOverKey, setDragOverKey]   = useState<WidgetKey | null>(null)
   const [draggingKey, setDraggingKey]   = useState<WidgetKey | null>(null)
@@ -175,6 +175,7 @@ function Dashboard() {
                   dragOverKey === key ? styles.dragOver : '',
                   draggingKey === key ? styles.dragging : '',
                 ].join(' ')}
+                data-widget-collapsed={widgetCollapsed[key] ? 'true' : 'false'}
                 draggable
                 onDragStart={e => {
                   dragSrc.current = { key, col: colKey }
@@ -187,6 +188,17 @@ function Dashboard() {
                 onDragOver={e => { e.preventDefault(); e.stopPropagation() }}
                 onDrop={e => { e.stopPropagation(); handleDrop(key, colKey); cleanup() }}
               >
+                <button
+                  className={styles.collapseBtn}
+                  draggable={false}
+                  onClick={e => { e.stopPropagation(); toggleCollapse(key) }}
+                  title={widgetCollapsed[key] ? 'Expand' : 'Collapse'}
+                >
+                  <ChevronDown
+                    size={11}
+                    className={widgetCollapsed[key] ? styles.chevronCollapsed : ''}
+                  />
+                </button>
                 {WIDGET_COMPONENTS[key]}
               </div>
             ))}

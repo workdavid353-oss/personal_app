@@ -173,6 +173,10 @@ a { color: inherit; text-decoration: none; }
 [dir="rtl"] .card-tools { margin-left: 0; margin-right: auto; }
 [dir="rtl"] .card-subtitle { margin-left: 0; margin-right: 4px; }
 
+/* ─── Widget collapse ─── */
+[data-widget-collapsed="true"] .card > *:not(.card-head) { display: none; }
+[data-widget-collapsed="true"] .card-head { margin-bottom: 0; }
+
 /* ─── Scrollbar ─── */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-thumb { background: var(--hair); border-radius: 999px; }

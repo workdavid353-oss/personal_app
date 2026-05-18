@@ -139,6 +139,30 @@
   .topbar { padding: 14px 20px; gap: 12px; }
 }
 
+/* ─── Widget collapse button ─── */
+.collapseBtn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: var(--ink-4);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s, transform 0.2s;
+  background: transparent;
+  border: none;
+}
+.collapseBtn:hover { background: var(--surface-2); color: var(--ink); opacity: 1; }
+.draggable:hover .collapseBtn { opacity: 1; }
+[data-widget-collapsed="true"] .collapseBtn { opacity: 1; }
+.chevronCollapsed { transform: rotate(90deg); }
+
 /* ─── Drag-and-drop ─── */
 .draggable {
   position: relative;
