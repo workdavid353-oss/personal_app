@@ -251,8 +251,10 @@ export function Sidebar({ onToast }: SidebarProps) {
       supabase.from('table_links_group').select('*').eq('user_id', user!.id).order('sort_order').order('created_at'),
       supabase.from('table_links').select('*').eq('user_id', user!.id).order('sort_order').order('created_at'),
     ])
-    setGroups(groupsRes.data ?? [])
+    const loadedGroups = groupsRes.data ?? []
+    setGroups(loadedGroups)
     setLinks(linksRes.data ?? [])
+    setCollapsedGroups(new Set(loadedGroups.map(g => g.id)))
     setLoading(false)
   }
 

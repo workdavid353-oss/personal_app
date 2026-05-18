@@ -16,8 +16,8 @@ const DEFAULTS: WidgetMap = {
 }
 
 const DEFAULT_COLLAPSED: Record<WidgetKey, boolean> = {
-  todos: true, weather: true, news: true, notes: true,
-  stocks: true, newsDigest: true, bankRates: true, wiki: true, spanishReader: true,
+  todos: false, weather: false, news: false, notes: false,
+  stocks: false, newsDigest: false, bankRates: false, wiki: false, spanishReader: false,
 }
 
 export const DEFAULT_LAYOUT: WidgetLayout = {
@@ -99,7 +99,7 @@ export function WidgetSettingsProvider({ children }: { children: ReactNode }) {
             if (prefs._collapsed) {
               const parsed: Partial<Record<WidgetKey, boolean>> = {}
               for (const [k, v] of Object.entries(prefs._collapsed)) {
-                parsed[k as WidgetKey] = v !== 'false'
+                parsed[k as WidgetKey] = v === 'true'
               }
               setWidgetCollapsed({ ...DEFAULT_COLLAPSED, ...parsed })
             }
