@@ -62,34 +62,38 @@ export function WidgetSettingsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!user) { setPrefsLoaded(true); return }
+    const uid = user.id
 
-    // Try with widget_prefs; fall back without it if the column doesn't exist yet
-    supabase
-      .from('user_settings')
-      .select('widgets, widget_layout, widget_prefs')
-      .eq('user_id', user.id)
-      .single()
-      .then(({ data, error }) => {
+    async function load() {
+      try {
+        const { data, error } = await supabase
+          .from('user_settings')
+          .select('widgets, widget_layout, widget_prefs')
+          .eq('user_id', uid)
+          .single()
+
         if (error) {
-          // Column may not exist yet — retry without widget_prefs
-          return supabase
+          // widget_prefs column likely doesn't exist yet — retry without it
+          const { data: fb } = await supabase
             .from('user_settings')
             .select('widgets, widget_layout')
-            .eq('user_id', user.id)
+            .eq('user_id', uid)
             .single()
-            .then(({ data: fallback }) => {
-              if (fallback?.widgets)       setWidgets({ ...DEFAULTS, ...fallback.widgets })
-              if (fallback?.widget_layout) setWidgetLayout(normalizeLayout(fallback.widget_layout))
-              setPrefsLoaded(true)
-            })
-            .catch(() => setPrefsLoaded(true))
+          if (fb?.widgets)       setWidgets({ ...DEFAULTS, ...fb.widgets })
+          if (fb?.widget_layout) setWidgetLayout(normalizeLayout(fb.widget_layout))
+        } else {
+          if (data?.widgets)       setWidgets({ ...DEFAULTS, ...data.widgets })
+          if (data?.widget_layout) setWidgetLayout(normalizeLayout(data.widget_layout))
+          if (data?.widget_prefs)  setWidgetPrefs(data.widget_prefs as WidgetPrefs)
         }
-        if (data?.widgets)       setWidgets({ ...DEFAULTS, ...data.widgets })
-        if (data?.widget_layout) setWidgetLayout(normalizeLayout(data.widget_layout))
-        if (data?.widget_prefs)  setWidgetPrefs(data.widget_prefs as WidgetPrefs)
+      } catch {
+        // network failure — proceed with defaults
+      } finally {
         setPrefsLoaded(true)
-      })
-      .catch(() => setPrefsLoaded(true))
+      }
+    }
+
+    load()
   }, [user])
 
   async function toggle(key: WidgetKey) {
