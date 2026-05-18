@@ -21,6 +21,8 @@ import styles from './App.module.css'
 import Stocks from './components/Stocks/Stocks'
 import NewsDigest from './components/NewsDigest/NewsDigest'
 import BankRates from './components/BankRates/BankRates'
+import WikiWidget from './components/WikiWidget/WikiWidget'
+import SpanishReader from './components/SpanishReader/SpanishReader'
 import GoldItemsPage from './pages/GoldItemsPage'
 
 // ─── Toast context / helper ───────────────────────────────────
@@ -115,6 +117,8 @@ const WIDGET_COMPONENTS: Record<WidgetKey, ReactElement> = {
   stocks:     <Stocks />,
   notes:      <Notes />,
   news:       <News />,
+  wiki:         <WikiWidget />,
+  spanishReader: <SpanishReader />,
 }
 
 function Dashboard() {

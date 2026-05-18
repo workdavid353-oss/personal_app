@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from './AuthContext'
 
-export type WidgetKey = 'todos' | 'weather' | 'news' | 'notes' | 'stocks' | 'newsDigest' | 'bankRates'
+export type WidgetKey = 'todos' | 'weather' | 'news' | 'notes' | 'stocks' | 'newsDigest' | 'bankRates' | 'wiki' | 'spanishReader'
 export type ColKey = 'col1' | 'col2' | 'col3'
 export type WidgetLayout = Record<ColKey, WidgetKey[]>
 
@@ -11,12 +11,12 @@ type WidgetMap = Record<WidgetKey, boolean>
 
 const DEFAULTS: WidgetMap = {
   todos: true, weather: true, news: true, notes: true,
-  stocks: true, newsDigest: true, bankRates: true,
+  stocks: true, newsDigest: true, bankRates: true, wiki: true, spanishReader: true,
 }
 
 export const DEFAULT_LAYOUT: WidgetLayout = {
-  col1: ['todos', 'bankRates'],
-  col2: ['weather', 'newsDigest'],
+  col1: ['todos', 'bankRates', 'spanishReader'],
+  col2: ['weather', 'newsDigest', 'wiki'],
   col3: ['notes', 'stocks', 'news'],
 }
 

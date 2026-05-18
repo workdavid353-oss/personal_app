@@ -5,7 +5,7 @@ import { useWidgetSettings } from '../../context/WidgetSettingsContext'
 import type { WidgetKey } from '../../context/WidgetSettingsContext'
 import styles from './WidgetSettings.module.css'
 
-const WIDGETS: WidgetKey[] = ['todos', 'weather', 'news', 'newsDigest', 'notes', 'stocks', 'bankRates']
+const WIDGETS: WidgetKey[] = ['todos', 'weather', 'news', 'newsDigest', 'notes', 'stocks', 'bankRates', 'wiki', 'spanishReader']
 
 export function WidgetSettings() {
   const { widgets, toggle } = useWidgetSettings()

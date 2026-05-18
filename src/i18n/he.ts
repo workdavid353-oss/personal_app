@@ -189,6 +189,8 @@ const he = {
     notes: 'פתקים',
     stocks: 'מניות',
     bankRates: 'שערי מט"ח',
+    wiki: 'ויקיפדיה',
+    spanishReader: 'קריאה בספרדית',
   },
   bankRates: {
     title: 'שערי בנק ישראל',

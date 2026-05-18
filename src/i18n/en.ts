@@ -189,6 +189,8 @@ const en = {
     notes: 'Notes',
     stocks: 'Stocks',
     bankRates: 'Bank Rates',
+    wiki: 'Wikipedia',
+    spanishReader: 'Spanish Reader',
   },
   bankRates: {
     title: 'Bank of Israel Rates',
