@@ -1,8 +1,51 @@
+/* ── Difficulty selector row ── */
+.difficultyRow {
+  display: flex;
+  gap: 4px;
+  padding: 6px 14px 0;
+}
+
+.diffBtn {
+  flex: 1;
+  height: 26px;
+  border: 1px solid var(--hair);
+  border-radius: 6px;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.diffBtn:hover:not(.diffBtnActive) {
+  border-color: var(--ink-4);
+  color: var(--ink-2);
+}
+
+.diffBtnActive { border-color: transparent; color: var(--surface); }
+
+/* per-level active colors */
+.diffBtnActive.diff_beginner     { background: var(--lime); }
+.diffBtnActive.diff_intermediate { background: var(--sky); }
+.diffBtnActive.diff_advanced     { background: var(--coral); }
+
+/* ── Body ── */
 .body {
   padding: 10px 14px 14px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+/* ── Title row ── */
+.titleRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .articleTitle {
@@ -13,6 +56,21 @@
   color: var(--ink);
 }
 
+.diffBadge {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 2px 6px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.badge_beginner     { background: var(--lime-soft);    color: var(--lime); }
+.badge_intermediate { background: var(--sky-soft);     color: var(--sky); }
+.badge_advanced     { background: var(--coral-soft);   color: var(--coral); }
+
+/* ── Paragraph ── */
 .paragraph {
   margin: 0;
   font-size: 0.85rem;
