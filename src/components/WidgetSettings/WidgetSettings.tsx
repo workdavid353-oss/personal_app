@@ -10,7 +10,7 @@ const WIDGETS: WidgetKey[] = ['todos', 'weather', 'news', 'newsDigest', 'notes',
 export function WidgetSettings() {
   const { widgets, toggle } = useWidgetSettings()
   const { t } = useTranslation()
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(true)
 
   return (
     <div className={styles.container}>
