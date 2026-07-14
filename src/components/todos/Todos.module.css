@@ -194,21 +194,6 @@
 .todoInput input::placeholder { color: var(--ink-4); }
 
 /* ─── Full add form ─── */
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 14px;
-  background: var(--surface-2);
-  border-radius: var(--radius);
-  border: 1px solid var(--hair);
-  margin-bottom: 10px;
-  flex-shrink: 0;
-}
-.formHeader { display: flex; align-items: center; justify-content: space-between; }
-.formTitle { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-3); }
-.closeBtn { width: 24px; height: 24px; border-radius: 5px; background: none; border: none; color: var(--ink-3); cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.closeBtn:hover { background: var(--surface); color: var(--ink); }
 .input {
   padding: 8px 12px;
   border-radius: var(--radius-sm);
@@ -269,7 +254,6 @@
 }
 .tag button { background: none; border: none; color: inherit; cursor: pointer; padding: 0; line-height: 1; }
 
-.formActions { display: flex; gap: 8px; justify-content: flex-end; padding-top: 4px; }
 .cancelBtn {
   height: 30px;
   padding: 0 12px;
@@ -291,6 +275,64 @@
   cursor: pointer;
 }
 .submitBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ─── Edit modal ─── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: oklch(0% 0 0 / 40%);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  width: 100%;
+  max-width: 440px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.modalHeader { display: flex; align-items: center; justify-content: space-between; }
+.modalTitle {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+.modalClose {
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 7px;
+  background: transparent;
+  border: none;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+.modalClose:hover { background: var(--surface-2); color: var(--ink); }
+.modalBody { display: flex; flex-direction: column; gap: 10px; }
+.modalActions { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 4px; }
+.dangerBtn {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid var(--hair);
+  color: var(--coral);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.dangerBtn:hover { background: var(--coral-soft); }
 
 /* ─── Sort + tag filter ─── */
 .filters { display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-bottom: 4px; }

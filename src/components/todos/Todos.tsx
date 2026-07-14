@@ -4,6 +4,7 @@ import { CheckSquare, Plus, Filter } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import type { Todo } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import DatePicker from './DatePicker'
 import styles from './Todos.module.css'
 
 // ─── helpers ────────────────────────────────────────────────
@@ -65,94 +66,227 @@ function AddTodoForm({ onAdd, existingTags, onClose }: AddTodoFormProps) {
   }
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit}>
-      <div className={styles.formHeader}>
-        <span className={styles.formTitle}>{t('todos.newTask')}</span>
-        <button type="button" className={styles.closeBtn} onClick={onClose}>✕</button>
-      </div>
+    <div className={styles.overlay} onClick={onClose}>
+      <form className={styles.modal} onClick={e => e.stopPropagation()} onSubmit={handleSubmit}>
+        <div className={styles.modalHeader}>
+          <span className={styles.modalTitle}>{t('todos.newTask')}</span>
+          <button type="button" className={styles.modalClose} onClick={onClose}>✕</button>
+        </div>
 
-      <input
-        ref={titleRef}
-        className={styles.input}
-        placeholder={t('todos.titlePlaceholder')}
-        value={title}
-        onChange={e => setTitle(e.target.value)}
-        required
-      />
+        <div className={styles.modalBody}>
+          <input
+            ref={titleRef}
+            className={styles.input}
+            placeholder={t('todos.titlePlaceholder')}
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            required
+          />
 
-      <textarea
-        className={styles.textarea}
-        placeholder={t('todos.contentPlaceholder')}
-        value={content}
-        onChange={e => setContent(e.target.value)}
-        rows={3}
-      />
+          <textarea
+            className={styles.textarea}
+            placeholder={t('todos.contentPlaceholder')}
+            value={content}
+            onChange={e => setContent(e.target.value)}
+            rows={4}
+          />
 
-      <div className={styles.formRow}>
-        <div className={styles.formGroup}>
-          <label className={styles.label}>{t('todos.priority')}</label>
-          <div className={styles.priorityBtns}>
-            {(['high', 'medium', 'low'] as Todo['priority'][]).map(p => (
-              <button
-                key={p}
-                type="button"
-                className={`${styles.priorityBtn} ${styles[p]} ${priority === p ? styles.active : ''}`}
-                onClick={() => setPriority(p)}
-              >
-                {t('todos.' + p)}
-              </button>
-            ))}
+          <div className={styles.formRow}>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>{t('todos.priority')}</label>
+              <div className={styles.priorityBtns}>
+                {(['high', 'medium', 'low'] as Todo['priority'][]).map(p => (
+                  <button
+                    key={p}
+                    type="button"
+                    className={`${styles.priorityBtn} ${styles[p]} ${priority === p ? styles.active : ''}`}
+                    onClick={() => setPriority(p)}
+                  >
+                    {t('todos.' + p)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>{t('todos.dueDate')}</label>
+              <DatePicker value={dueDate} onChange={setDueDate} />
+            </div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>{t('todos.tags')}</label>
+            <div className={styles.tagInputRow}>
+              <input
+                className={styles.input}
+                placeholder={t('todos.tagPlaceholder')}
+                value={tagInput}
+                onChange={e => setTagInput(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') { e.preventDefault(); addTag(tagInput) }
+                }}
+                list="existing-tags"
+              />
+              <datalist id="existing-tags">
+                {existingTags.map(t => <option key={t} value={t} />)}
+              </datalist>
+              <button type="button" className={styles.addTagBtn} onClick={() => addTag(tagInput)}>+</button>
+            </div>
+            {tags.length > 0 && (
+              <div className={styles.tagsList}>
+                {tags.map(t => (
+                  <span key={t} className={styles.tag}>
+                    {t}
+                    <button type="button" onClick={() => setTags(prev => prev.filter(x => x !== t))}>×</button>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
-        <div className={styles.formGroup}>
-          <label className={styles.label}>{t('todos.dueDate')}</label>
-          <input
-            type="date"
-            className={styles.input}
-            value={dueDate}
-            onChange={e => setDueDate(e.target.value)}
-          />
+        <div className={styles.modalActions} style={{ justifyContent: 'flex-end' }}>
+          <button type="button" className={styles.cancelBtn} onClick={onClose}>{t('common.cancel')}</button>
+          <button type="submit" className={styles.submitBtn} disabled={loading || !title.trim()}>
+            {loading ? '...' : t('todos.addTask')}
+          </button>
         </div>
-      </div>
+      </form>
+    </div>
+  )
+}
 
-      <div className={styles.formGroup}>
-        <label className={styles.label}>{t('todos.tags')}</label>
-        <div className={styles.tagInputRow}>
-          <input
-            className={styles.input}
-            placeholder={t('todos.tagPlaceholder')}
-            value={tagInput}
-            onChange={e => setTagInput(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === 'Enter') { e.preventDefault(); addTag(tagInput) }
-            }}
-            list="existing-tags"
-          />
-          <datalist id="existing-tags">
-            {existingTags.map(t => <option key={t} value={t} />)}
-          </datalist>
-          <button type="button" className={styles.addTagBtn} onClick={() => addTag(tagInput)}>+</button>
+// ─── EditTodoModal ─────────────────────────────────────────────
+interface EditTodoModalProps {
+  todo: Todo
+  existingTags: string[]
+  onSave: (id: number, changes: Partial<Todo>) => void
+  onDelete: (id: number) => void
+  onClose: () => void
+}
+
+function EditTodoModal({ todo, existingTags, onSave, onDelete, onClose }: EditTodoModalProps) {
+  const { t } = useTranslation()
+  const [title, setTitle] = useState(todo.title)
+  const [content, setContent] = useState(todo.content ?? '')
+  const [priority, setPriority] = useState<Todo['priority']>(todo.priority)
+  const [dueDate, setDueDate] = useState(todo.due_date ?? '')
+  const [tagInput, setTagInput] = useState('')
+  const [tags, setTags] = useState<string[]>(todo.tags ?? [])
+  const titleRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => { titleRef.current?.focus() }, [])
+
+  function addTag(value: string) {
+    const tag = value.trim().toLowerCase()
+    if (tag && !tags.includes(tag)) setTags(prev => [...prev, tag])
+    setTagInput('')
+  }
+
+  function handleSave() {
+    if (!title.trim()) return
+    onSave(todo.id, {
+      title: title.trim(),
+      content: content.trim() || null,
+      priority,
+      due_date: dueDate || null,
+      tags: tags.length ? tags : null,
+    })
+    onClose()
+  }
+
+  return (
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modal} onClick={e => e.stopPropagation()}>
+        <div className={styles.modalHeader}>
+          <span className={styles.modalTitle}>{t('todos.editTask')}</span>
+          <button className={styles.modalClose} onClick={onClose}>✕</button>
         </div>
-        {tags.length > 0 && (
-          <div className={styles.tagsList}>
-            {tags.map(t => (
-              <span key={t} className={styles.tag}>
-                {t}
-                <button type="button" onClick={() => setTags(prev => prev.filter(x => x !== t))}>×</button>
-              </span>
-            ))}
+
+        <div className={styles.modalBody}>
+          <input
+            ref={titleRef}
+            className={styles.input}
+            placeholder={t('todos.titlePlaceholder')}
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+          />
+
+          <textarea
+            className={styles.textarea}
+            placeholder={t('todos.contentPlaceholder')}
+            value={content}
+            onChange={e => setContent(e.target.value)}
+            rows={4}
+          />
+
+          <div className={styles.formRow}>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>{t('todos.priority')}</label>
+              <div className={styles.priorityBtns}>
+                {(['high', 'medium', 'low'] as Todo['priority'][]).map(p => (
+                  <button
+                    key={p}
+                    type="button"
+                    className={`${styles.priorityBtn} ${styles[p]} ${priority === p ? styles.active : ''}`}
+                    onClick={() => setPriority(p)}
+                  >
+                    {t('todos.' + p)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>{t('todos.dueDate')}</label>
+              <DatePicker value={dueDate} onChange={setDueDate} />
+            </div>
           </div>
-        )}
-      </div>
 
-      <div className={styles.formActions}>
-        <button type="button" className={styles.cancelBtn} onClick={onClose}>{t('common.cancel')}</button>
-        <button type="submit" className={styles.submitBtn} disabled={loading || !title.trim()}>
-          {loading ? '...' : t('todos.addTask')}
-        </button>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>{t('todos.tags')}</label>
+            <div className={styles.tagInputRow}>
+              <input
+                className={styles.input}
+                placeholder={t('todos.tagPlaceholder')}
+                value={tagInput}
+                onChange={e => setTagInput(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') { e.preventDefault(); addTag(tagInput) }
+                }}
+                list="edit-existing-tags"
+              />
+              <datalist id="edit-existing-tags">
+                {existingTags.map(tg => <option key={tg} value={tg} />)}
+              </datalist>
+              <button type="button" className={styles.addTagBtn} onClick={() => addTag(tagInput)}>+</button>
+            </div>
+            {tags.length > 0 && (
+              <div className={styles.tagsList}>
+                {tags.map(tg => (
+                  <span key={tg} className={styles.tag}>
+                    {tg}
+                    <button type="button" onClick={() => setTags(prev => prev.filter(x => x !== tg))}>×</button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className={styles.modalActions}>
+          <button type="button" className={styles.dangerBtn} onClick={() => { onDelete(todo.id); onClose() }}>
+            {t('todos.deleteTask')}
+          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button type="button" className={styles.cancelBtn} onClick={onClose}>{t('common.cancel')}</button>
+            <button type="button" className={styles.submitBtn} onClick={handleSave} disabled={!title.trim()}>
+              {t('common.save')}
+            </button>
+          </div>
+        </div>
       </div>
-    </form>
+    </div>
   )
 }
 
@@ -161,7 +295,7 @@ interface TodoItemProps {
   todo: Todo
   onToggle: (id: number, completed: boolean) => void
   onDelete: (id: number) => void
-  onUpdate: (id: number, changes: Partial<Todo>) => void
+  onOpen: (todo: Todo) => void
   dragHandleProps: {
     draggable: boolean
     onDragStart: (e: React.DragEvent) => void
@@ -173,21 +307,8 @@ interface TodoItemProps {
   locale: string
 }
 
-function TodoItem({ todo, onToggle, onDelete, onUpdate, dragHandleProps, isDragOver, locale }: TodoItemProps) {
+function TodoItem({ todo, onToggle, onDelete, onOpen, dragHandleProps, isDragOver, locale }: TodoItemProps) {
   const { t } = useTranslation()
-  const [expanded, setExpanded] = useState(false)
-  const [editing, setEditing] = useState(false)
-  const [editTitle, setEditTitle] = useState(todo.title)
-
-  function saveTitle() {
-    if (editTitle.trim() && editTitle.trim() !== todo.title) {
-      onUpdate(todo.id, { title: editTitle.trim() })
-    } else {
-      setEditTitle(todo.title)
-    }
-    setEditing(false)
-  }
-
   const overdue = isOverdue(todo.due_date) && !todo.completed
 
   return (
@@ -207,21 +328,8 @@ function TodoItem({ todo, onToggle, onDelete, onUpdate, dragHandleProps, isDragO
           {todo.completed && '✓'}
         </button>
 
-        <div className={styles.itemContent}>
-          {editing ? (
-            <input
-              className={styles.editInput}
-              value={editTitle}
-              onChange={e => setEditTitle(e.target.value)}
-              onBlur={saveTitle}
-              onKeyDown={e => { if (e.key === 'Enter') saveTitle(); if (e.key === 'Escape') { setEditTitle(todo.title); setEditing(false) } }}
-              autoFocus
-            />
-          ) : (
-            <span className={styles.itemTitle} onDoubleClick={() => setEditing(true)} title={t('todos.doubleClickEdit')}>
-              {todo.title}
-            </span>
-          )}
+        <div className={styles.itemContent} onClick={() => onOpen(todo)} title={t('todos.editTask')}>
+          <span className={styles.itemTitle}>{todo.title}</span>
 
           <div className={styles.itemMeta}>
             <span className={`${styles.priorityDot} ${styles[todo.priority]}`} title={t('todos.priority') + ' ' + t('todos.' + todo.priority)} />
@@ -237,18 +345,9 @@ function TodoItem({ todo, onToggle, onDelete, onUpdate, dragHandleProps, isDragO
         </div>
 
         <div className={styles.itemActions}>
-          {todo.content && (
-            <button className={styles.expandBtn} onClick={() => setExpanded(x => !x)} title={expanded ? t('todos.closeTask') : t('todos.expandTask')}>
-              {expanded ? '▲' : '▼'}
-            </button>
-          )}
           <button className={styles.deleteBtn} onClick={() => onDelete(todo.id)} title={t('todos.deleteTask')}>✕</button>
         </div>
       </div>
-
-      {expanded && todo.content && (
-        <div className={styles.itemBody}>{todo.content}</div>
-      )}
     </div>
   )
 }
@@ -267,6 +366,7 @@ export default function Todos() {
   const [sortBy, setSortBy] = useState<'order' | 'priority' | 'due'>('order')
   const dragId = useRef<number | null>(null)
   const [dragOverId, setDragOverId] = useState<number | null>(null)
+  const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
 
   const locale = i18n.language === 'he' ? 'he-IL' : 'en-US'
 
@@ -467,7 +567,7 @@ export default function Todos() {
             todo={todo}
             onToggle={handleToggle}
             onDelete={handleDelete}
-            onUpdate={handleUpdate}
+            onOpen={setEditingTodo}
             isDragOver={dragOverId === todo.id}
             locale={locale}
             dragHandleProps={{
@@ -491,6 +591,16 @@ export default function Todos() {
           onKeyDown={e => { if (e.key === 'Enter') handleQuickAdd() }}
         />
       </div>
+
+      {editingTodo && (
+        <EditTodoModal
+          todo={editingTodo}
+          existingTags={allTags}
+          onSave={handleUpdate}
+          onDelete={handleDelete}
+          onClose={() => setEditingTodo(null)}
+        />
+      )}
     </div>
   )
 }

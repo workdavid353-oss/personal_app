@@ -17,6 +17,7 @@ const en = {
     search: 'Search',
     error: 'Error',
     hidden: 'Hidden',
+    clear: 'Clear',
   },
   app: {
     logout: 'Logout',
@@ -112,6 +113,9 @@ const en = {
     deleteTask: 'Delete',
     closeTask: 'Close',
     expandTask: 'Expand',
+    editTask: 'Edit task',
+    today: 'Today',
+    selectDate: 'Select date',
   },
   notes: {
     new: 'New',
@@ -126,6 +130,8 @@ const en = {
     delete: 'Delete',
     markComplete: 'Mark as complete',
     markIncomplete: 'Mark as incomplete',
+    editNote: 'Edit note',
+    noContent: 'No content',
   },
   weather: {
     days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],

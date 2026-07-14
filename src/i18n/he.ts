@@ -17,6 +17,7 @@ const he = {
     search: 'חפש',
     error: 'שגיאה',
     hidden: 'מוסתר',
+    clear: 'נקה',
   },
   app: {
     logout: 'התנתק',
@@ -112,6 +113,9 @@ const he = {
     deleteTask: 'מחק',
     closeTask: 'סגור',
     expandTask: 'פרט',
+    editTask: 'ערוך משימה',
+    today: 'היום',
+    selectDate: 'בחר תאריך',
   },
   notes: {
     new: 'חדש',
@@ -126,6 +130,8 @@ const he = {
     delete: 'מחק',
     markComplete: 'סמן כהושלם',
     markIncomplete: 'סמן כלא הושלם',
+    editNote: 'ערוך פתק',
+    noContent: 'אין תוכן',
   },
   weather: {
     days: ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'],

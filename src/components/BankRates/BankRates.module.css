@@ -139,6 +139,7 @@
 .row:last-child { border-bottom: none; }
 .rowSelected { background: var(--accent-soft); border-radius: 8px; }
 
+.flagWrap { position: relative; flex-shrink: 0; }
 .flag {
   width: 32px;
   height: 32px;
@@ -151,7 +152,20 @@
   font-style: italic;
   font-size: 16px;
   color: var(--ink);
-  flex-shrink: 0;
+}
+.coinBadge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-3);
 }
 
 .pair { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
