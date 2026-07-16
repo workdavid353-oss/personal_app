@@ -34,13 +34,11 @@
   align-items: center;
   justify-content: center;
   font-family: var(--font-display);
-  font-style: italic;
   font-size: 18px;
   flex-shrink: 0;
 }
 .sidebarTitle {
   font-family: var(--font-display);
-  font-style: italic;
   font-size: 22px;
   letter-spacing: -0.01em;
   flex: 1;
@@ -304,7 +302,6 @@
   align-items: center;
   justify-content: center;
   font-family: var(--font-display);
-  font-style: italic;
   font-size: 14px;
   flex-shrink: 0;
 }

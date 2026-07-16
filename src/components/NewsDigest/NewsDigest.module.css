@@ -11,7 +11,6 @@
 
 .digestNum {
   font-family: var(--font-display);
-  font-style: italic;
   font-size: 24px;
   line-height: 1;
   color: var(--accent);
@@ -31,6 +30,7 @@
   color: var(--ink-3);
 }
 .digestTime { font-family: var(--font-mono); font-size: 10px; color: var(--ink-4); }
+[data-mode="dark"] .digestSource { color: var(--ink); }
 .digestLink {
   display: flex;
   align-items: center;

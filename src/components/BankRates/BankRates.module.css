@@ -99,7 +99,6 @@
 }
 .calcResultNum {
   font-family: var(--font-display);
-  font-style: italic;
   font-size: 22px;
   color: var(--ink);
   line-height: 1;
@@ -124,63 +123,51 @@
 }
 
 /* ─── Bank Rates list ─── */
-.list { display: flex; flex-direction: column; gap: 4px; margin-top: -4px; }
+.list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
 .row {
-  display: grid;
-  grid-template-columns: 36px 1fr auto auto;
-  gap: 12px;
-  align-items: center;
-  padding: 10px 4px;
-  border-bottom: 1px dashed var(--hair-2);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 12px 10px 44px;
+  background: var(--surface-2);
+  border-radius: 14px;
+  position: relative;
   cursor: pointer;
   transition: background 0.12s;
 }
-.row:last-child { border-bottom: none; }
-.rowSelected { background: var(--accent-soft); border-radius: 8px; }
+[dir="rtl"] .row { padding: 14px 44px 10px 12px; }
+.rowSelected { background: var(--accent-soft); }
 
-.flagWrap { position: relative; flex-shrink: 0; }
 .flag {
-  width: 32px;
-  height: 32px;
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  width: 28px;
+  height: 28px;
   background: var(--accent-soft);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-display);
-  font-style: italic;
-  font-size: 16px;
+  font-size: 15px;
   color: var(--ink);
 }
-.coinBadge {
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  background: var(--surface);
-  border: 1px solid var(--hair);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--ink-3);
-}
+[dir="rtl"] .flag { left: auto; right: 14px; }
 
-.pair { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .code { font-family: var(--font-mono); font-size: 13px; font-weight: 600; letter-spacing: 0.04em; color: var(--ink); }
 .name { font-size: 11px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .rate {
   font-family: var(--font-display);
-  font-style: italic;
-  font-size: 22px;
+  font-size: 17px;
   letter-spacing: -0.01em;
   color: var(--ink);
 }
 
 .delta {
+  align-self: flex-start;
   font-family: var(--font-mono);
   font-size: 11px;
   padding: 3px 8px;

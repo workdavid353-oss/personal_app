@@ -6,6 +6,7 @@ dist/
 .env.*.local
 *.log
 .DS_Store
+design_refresh_prompt.md
 EOF
 
 # wrangler files

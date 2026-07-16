@@ -16,6 +16,7 @@
   pointer-events: none;
   z-index: 0;
 }
+[data-mode="dark"] .canvas::before { opacity: 0.35; }
 
 /* ─── Layout ─── */
 .layout {

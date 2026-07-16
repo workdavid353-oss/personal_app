@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Globe, RefreshCw, Search, ArrowLeftRight, Coins } from 'lucide-react'
+import { Globe, RefreshCw, Search, ArrowLeftRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
 import type { BankRate } from '../../lib/supabase'
@@ -169,14 +169,9 @@ export default function BankRates() {
               className={`${styles.row} ${calcCurrency === rate.currency ? styles.rowSelected : ''}`}
               onClick={() => { setCalcCurrency(rate.currency); setFlipped(false) }}
             >
-              <div className={styles.flagWrap}>
-                <div className={styles.flag}>{glyph}</div>
-                <span className={styles.coinBadge}><Coins size={9} /></span>
-              </div>
-              <div className={styles.pair}>
-                <span className={styles.code}>{rate.currency}/ILS</span>
-                <span className={styles.name}>{name}</span>
-              </div>
+              <div className={styles.flag}>{glyph}</div>
+              <span className={styles.code}>{rate.currency}/ILS</span>
+              <span className={styles.name}>{name}</span>
               <span className={styles.rate}>
                 {rate.rate.toFixed(3)}
                 {rate.unit > 1 && <span style={{ fontSize: 13, color: 'var(--ink-3)', marginLeft: 2 }}> /{rate.unit}</span>}

@@ -127,6 +127,7 @@
   color: var(--ink-2);
   text-transform: uppercase;
 }
+[data-mode="dark"] .tagSmall { color: var(--ink); }
 
 .itemActions { display: flex; gap: 2px; }
 .expandBtn, .deleteBtn {
