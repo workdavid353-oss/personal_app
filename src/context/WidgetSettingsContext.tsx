@@ -77,19 +77,12 @@ export function WidgetSettingsProvider({ children }: { children: ReactNode }) {
       try {
         const { data, error } = await supabase
           .from('user_settings')
-          .select('widgets, widget_layout, widget_prefs')
+          .select('*')
           .eq('user_id', uid)
-          .single()
+          .maybeSingle()
 
         if (error) {
-          // widget_prefs column likely doesn't exist yet — retry without it
-          const { data: fb } = await supabase
-            .from('user_settings')
-            .select('widgets, widget_layout')
-            .eq('user_id', uid)
-            .single()
-          if (fb?.widgets)       setWidgets({ ...DEFAULTS, ...fb.widgets })
-          if (fb?.widget_layout) setWidgetLayout(normalizeLayout(fb.widget_layout))
+          console.error('Failed to load widget settings:', error.message)
         } else {
           if (data?.widgets)       setWidgets({ ...DEFAULTS, ...data.widgets })
           if (data?.widget_layout) setWidgetLayout(normalizeLayout(data.widget_layout))
@@ -116,32 +109,40 @@ export function WidgetSettingsProvider({ children }: { children: ReactNode }) {
   }, [user])
 
   async function toggle(key: WidgetKey) {
+    const previous = widgets
     const updated = { ...widgets, [key]: !widgets[key] }
     setWidgets(updated)
     if (user) {
-      await supabase.from('user_settings')
+      const { error } = await supabase.from('user_settings')
         .upsert({ user_id: user.id, widgets: updated }, { onConflict: 'user_id' })
+      if (error) { console.error('Failed to save widget visibility:', error.message); setWidgets(previous) }
     }
   }
 
   async function updateLayout(layout: WidgetLayout) {
+    const previous = widgetLayout
     setWidgetLayout(layout)
     if (user) {
-      await supabase.from('user_settings')
+      const { error } = await supabase.from('user_settings')
         .upsert({ user_id: user.id, widget_layout: layout }, { onConflict: 'user_id' })
+      if (error) { console.error('Failed to save widget layout:', error.message); setWidgetLayout(previous) }
     }
   }
 
   async function updateWidgetPref(widgetKey: string, prefs: Record<string, string>) {
+    const previous = widgetPrefs
     const updated = { ...widgetPrefs, [widgetKey]: prefs }
     setWidgetPrefs(updated)
     if (user) {
-      await supabase.from('user_settings')
+      const { error } = await supabase.from('user_settings')
         .upsert({ user_id: user.id, widget_prefs: updated }, { onConflict: 'user_id' })
+      if (error) { console.error('Failed to save widget prefs:', error.message); setWidgetPrefs(previous) }
     }
   }
 
   async function toggleCollapse(key: WidgetKey) {
+    const previousCollapsed = widgetCollapsed
+    const previousPrefs = widgetPrefs
     const updated = { ...widgetCollapsed, [key]: !widgetCollapsed[key] }
     setWidgetCollapsed(updated)
     if (user) {
@@ -149,8 +150,13 @@ export function WidgetSettingsProvider({ children }: { children: ReactNode }) {
       for (const [k, v] of Object.entries(updated)) collapsedStrings[k] = String(v)
       const updatedPrefs = { ...widgetPrefs, _collapsed: collapsedStrings }
       setWidgetPrefs(updatedPrefs)
-      await supabase.from('user_settings')
+      const { error } = await supabase.from('user_settings')
         .upsert({ user_id: user.id, widget_prefs: updatedPrefs }, { onConflict: 'user_id' })
+      if (error) {
+        console.error('Failed to save widget collapse state:', error.message)
+        setWidgetCollapsed(previousCollapsed)
+        setWidgetPrefs(previousPrefs)
+      }
     }
   }
 

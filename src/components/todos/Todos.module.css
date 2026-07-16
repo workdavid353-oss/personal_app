@@ -106,6 +106,7 @@
 .priorityDot.high   { background: var(--coral); }
 .priorityDot.medium { background: var(--tangerine); }
 .priorityDot.low    { background: var(--sage); }
+.priorityBtn.active { background: var(--accent-soft); color: var(--ink-2); border-color: var(--ink-4); }
 .high.active { background: var(--coral-soft); color: var(--coral); border-color: var(--coral); }
 .medium.active { background: var(--tangerine-soft); color: var(--tangerine); border-color: var(--tangerine); }
 .low.active { background: var(--sage-soft); color: var(--sage); border-color: var(--sage); }

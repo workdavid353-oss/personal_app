@@ -50,7 +50,14 @@ export default function Stocks() {
       symbol,
       sort_order: i,
     }))
-    const { data } = await supabase.from('user_stocks').insert(rows).select('id, symbol, sort_order')
+    // ignoreDuplicates means a racing double-insert (e.g. StrictMode's double effect) is a no-op
+    // rather than a second row; re-read the table afterward so both calls converge on the same state.
+    await supabase.from('user_stocks').upsert(rows, { onConflict: 'user_id,symbol', ignoreDuplicates: true })
+    const { data } = await supabase
+      .from('user_stocks')
+      .select('id, symbol, sort_order')
+      .eq('user_id', user!.id)
+      .order('sort_order')
     if (data) setDbStocks(data)
   }
 

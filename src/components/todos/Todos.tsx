@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { CheckSquare, Plus, Filter } from 'lucide-react'
+import { CheckSquare, Plus, Filter, Repeat } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import type { Todo } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import DatePicker from './DatePicker'
+import { getNextOccurrence, needsRollover, WEEKDAY_KEYS } from './recurrence'
 import styles from './Todos.module.css'
 
 // ─── helpers ────────────────────────────────────────────────
@@ -40,6 +41,8 @@ function AddTodoForm({ onAdd, existingTags, onClose }: AddTodoFormProps) {
   const [dueDate, setDueDate] = useState('')
   const [tagInput, setTagInput] = useState('')
   const [tags, setTags] = useState<string[]>([])
+  const [recurrenceType, setRecurrenceType] = useState<Todo['recurrence_type']>('none')
+  const [recurrenceWeekdays, setRecurrenceWeekdays] = useState<number[]>([])
   const [loading, setLoading] = useState(false)
   const titleRef = useRef<HTMLInputElement>(null)
 
@@ -51,6 +54,10 @@ function AddTodoForm({ onAdd, existingTags, onClose }: AddTodoFormProps) {
     setTagInput('')
   }
 
+  function toggleWeekday(day: number) {
+    setRecurrenceWeekdays(prev => prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day].sort())
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!title.trim()) return
@@ -59,8 +66,10 @@ function AddTodoForm({ onAdd, existingTags, onClose }: AddTodoFormProps) {
       title: title.trim(),
       content: content.trim() || null,
       priority,
-      due_date: dueDate || null,
+      due_date: dueDate || (recurrenceType !== 'none' ? new Date().toISOString().slice(0, 10) : null),
       tags: tags.length ? tags : null,
+      recurrence_type: recurrenceType,
+      recurrence_weekdays: recurrenceType === 'weekly' && recurrenceWeekdays.length ? recurrenceWeekdays : null,
     })
     setLoading(false)
   }
@@ -112,6 +121,36 @@ function AddTodoForm({ onAdd, existingTags, onClose }: AddTodoFormProps) {
               <label className={styles.label}>{t('todos.dueDate')}</label>
               <DatePicker value={dueDate} onChange={setDueDate} />
             </div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>{t('todos.repeat')}</label>
+            <select
+              className={styles.sortSelect}
+              style={{ marginLeft: 0, width: 'fit-content' }}
+              value={recurrenceType}
+              onChange={e => setRecurrenceType(e.target.value as Todo['recurrence_type'])}
+            >
+              <option value="none">{t('todos.repeatNone')}</option>
+              <option value="daily">{t('todos.repeatDaily')}</option>
+              <option value="weekly">{t('todos.repeatWeekly')}</option>
+              <option value="monthly">{t('todos.repeatMonthly')}</option>
+              <option value="yearly">{t('todos.repeatYearly')}</option>
+            </select>
+            {recurrenceType === 'weekly' && (
+              <div className={styles.priorityBtns}>
+                {WEEKDAY_KEYS.map((key, i) => (
+                  <button
+                    key={key}
+                    type="button"
+                    className={`${styles.priorityBtn} ${recurrenceWeekdays.includes(i) ? styles.active : ''}`}
+                    onClick={() => toggleWeekday(i)}
+                  >
+                    {t('todos.weekday.' + key)}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className={styles.formGroup}>
@@ -173,6 +212,8 @@ function EditTodoModal({ todo, existingTags, onSave, onDelete, onClose }: EditTo
   const [dueDate, setDueDate] = useState(todo.due_date ?? '')
   const [tagInput, setTagInput] = useState('')
   const [tags, setTags] = useState<string[]>(todo.tags ?? [])
+  const [recurrenceType, setRecurrenceType] = useState<Todo['recurrence_type']>(todo.recurrence_type)
+  const [recurrenceWeekdays, setRecurrenceWeekdays] = useState<number[]>(todo.recurrence_weekdays ?? [])
   const titleRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { titleRef.current?.focus() }, [])
@@ -183,14 +224,20 @@ function EditTodoModal({ todo, existingTags, onSave, onDelete, onClose }: EditTo
     setTagInput('')
   }
 
+  function toggleWeekday(day: number) {
+    setRecurrenceWeekdays(prev => prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day].sort())
+  }
+
   function handleSave() {
     if (!title.trim()) return
     onSave(todo.id, {
       title: title.trim(),
       content: content.trim() || null,
       priority,
-      due_date: dueDate || null,
+      due_date: dueDate || (recurrenceType !== 'none' ? new Date().toISOString().slice(0, 10) : null),
       tags: tags.length ? tags : null,
+      recurrence_type: recurrenceType,
+      recurrence_weekdays: recurrenceType === 'weekly' && recurrenceWeekdays.length ? recurrenceWeekdays : null,
     })
     onClose()
   }
@@ -241,6 +288,36 @@ function EditTodoModal({ todo, existingTags, onSave, onDelete, onClose }: EditTo
               <label className={styles.label}>{t('todos.dueDate')}</label>
               <DatePicker value={dueDate} onChange={setDueDate} />
             </div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>{t('todos.repeat')}</label>
+            <select
+              className={styles.sortSelect}
+              style={{ marginLeft: 0, width: 'fit-content' }}
+              value={recurrenceType}
+              onChange={e => setRecurrenceType(e.target.value as Todo['recurrence_type'])}
+            >
+              <option value="none">{t('todos.repeatNone')}</option>
+              <option value="daily">{t('todos.repeatDaily')}</option>
+              <option value="weekly">{t('todos.repeatWeekly')}</option>
+              <option value="monthly">{t('todos.repeatMonthly')}</option>
+              <option value="yearly">{t('todos.repeatYearly')}</option>
+            </select>
+            {recurrenceType === 'weekly' && (
+              <div className={styles.priorityBtns}>
+                {WEEKDAY_KEYS.map((key, i) => (
+                  <button
+                    key={key}
+                    type="button"
+                    className={`${styles.priorityBtn} ${recurrenceWeekdays.includes(i) ? styles.active : ''}`}
+                    onClick={() => toggleWeekday(i)}
+                  >
+                    {t('todos.weekday.' + key)}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className={styles.formGroup}>
@@ -338,6 +415,11 @@ function TodoItem({ todo, onToggle, onDelete, onOpen, dragHandleProps, isDragOve
                 {overdue ? '⚠ ' : '📅 '}{formatDate(todo.due_date, locale)}
               </span>
             )}
+            {todo.recurrence_type !== 'none' && (
+              <span className={styles.dueDate} title={t('todos.repeat' + todo.recurrence_type[0].toUpperCase() + todo.recurrence_type.slice(1))}>
+                <Repeat size={10} style={{ verticalAlign: '-1px' }} />
+              </span>
+            )}
             {todo.tags?.map(t => (
               <span key={t} className={styles.tagSmall}>{t}</span>
             ))}
@@ -382,8 +464,24 @@ export default function Todos() {
       .select('*')
       .eq('user_id', user!.id)
       .order('sort_order', { ascending: true })
-    if (error) setError(error.message)
-    else setTodos(data ?? [])
+    if (error) { setError(error.message); setLoading(false); return }
+
+    const fetched: Todo[] = (data ?? []).map((t: Todo) => ({
+      ...t,
+      recurrence_type: t.recurrence_type ?? 'none',
+      recurrence_weekdays: t.recurrence_weekdays ?? null,
+    }))
+    const rolled = await Promise.all(
+      fetched.map(async t => {
+        if (!needsRollover(t.due_date, t.recurrence_type)) return t
+        const nextDate = getNextOccurrence(t.due_date, t.recurrence_type, t.recurrence_weekdays, new Date())
+        if (!nextDate) return t
+        const changes = { due_date: nextDate, completed: false, updated_at: new Date().toISOString() }
+        await supabase.from('table_todos').update(changes).eq('id', t.id)
+        return { ...t, ...changes }
+      })
+    )
+    setTodos(rolled)
     setLoading(false)
   }
 
@@ -485,7 +583,7 @@ export default function Todos() {
     const title = draft.trim()
     if (!title) return
     setDraft('')
-    await handleAdd({ title, content: null, priority: 'medium', due_date: null, tags: null })
+    await handleAdd({ title, content: null, priority: 'medium', due_date: null, tags: null, recurrence_type: 'none', recurrence_weekdays: null })
   }
 
   return (

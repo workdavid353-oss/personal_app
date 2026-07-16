@@ -36,6 +36,8 @@ export interface Todo {
   tags: string[] | null
   sort_order: number
   user_id: number | null
+  recurrence_type: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly'
+  recurrence_weekdays: number[] | null
 }
 
 export interface UserStock {
