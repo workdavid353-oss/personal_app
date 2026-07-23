@@ -1,7 +1,7 @@
 // src/pages/LoginPage.tsx
 import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
-import { Mail, Lock, Eye, EyeOff, ArrowRight, User, Sun, Moon } from 'lucide-react'
+import { Mail, Eye, EyeOff, ArrowRight, User, Sun, Moon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
