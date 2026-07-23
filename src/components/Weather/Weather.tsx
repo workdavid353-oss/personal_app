@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CloudSun, MapPin } from 'lucide-react'
+import { useWidgetSettings } from '../../context/WidgetSettingsContext'
 import styles from './Weather.module.css'
 
 // ─── Types ────────────────────────────────────────────────────
@@ -46,6 +47,7 @@ const API_KEY = import.meta.env.VITE_WEATHER_API_KEY as string
 // ─── Main Component ───────────────────────────────────────────
 export default function Weather() {
   const { t } = useTranslation()
+  const { widgetPrefs, prefsLoaded } = useWidgetSettings()
 
   const DAYS = t('weather.days', { returnObjects: true }) as string[]
 
@@ -127,12 +129,17 @@ export default function Weather() {
 
   // ── load on mount ──
   useEffect(() => {
-    if (favorites.length > 0) {
+    if (!prefsLoaded) return
+    const defaultLocation = widgetPrefs.weather?.defaultLocation?.trim()
+    if (defaultLocation) {
+      fetchWeather(defaultLocation)
+    } else if (favorites.length > 0) {
       fetchWeather(favorites[0].name)
     } else {
       fetchByLocation()
     }
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefsLoaded])
 
   // ── save favorites ──
   function saveFavorites(list: SavedLocation[]) {

@@ -1,0 +1,143 @@
+/* src/pages/SettingsPage.module.css */
+
+.page {
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.pageTitle {
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 0 0 24px;
+}
+
+/* ── Section ── */
+.section { margin-bottom: 24px; }
+.sectionLabel {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+  font-weight: 500;
+  padding: 0 4px 8px;
+}
+.group {
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Row ── */
+.row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: none;
+  border-bottom: 1px solid var(--hair);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: default;
+}
+button.row { cursor: pointer; transition: background 0.15s; }
+button.row:hover { background: var(--surface-2); }
+.row:last-child { border-bottom: none; }
+
+.rowIcon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--row-accent-soft, var(--surface-2));
+  color: var(--ink);
+}
+
+.rowText { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.rowTitle { font-size: 14px; color: var(--ink); }
+.rowSub { font-size: 12px; color: var(--ink-3); line-height: 1.4; }
+
+.rowValue { font-size: 13px; color: var(--ink-3); flex-shrink: 0; }
+.rowChevron { color: var(--ink-4); flex-shrink: 0; }
+[dir="rtl"] .rowChevron { transform: scaleX(-1); }
+
+/* ── Stacked row (weather, with inline input) ── */
+.rowStacked { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+.rowStackedHead { display: flex; align-items: center; gap: 14px; }
+
+/* ── Switch ── */
+.switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 44px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: var(--hair);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.switchOn { background: var(--tangerine); }
+.switchThumb {
+  position: absolute;
+  top: 3px;
+  inset-inline-start: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  transition: inset-inline-start 0.15s;
+}
+.switchOn .switchThumb { inset-inline-start: 21px; }
+
+/* ── Weather location input ── */
+.locationRow { display: flex; gap: 8px; }
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 38px;
+  padding: 0 12px;
+  background: var(--surface-2);
+  border: 1.5px solid var(--hair);
+  border-radius: 10px;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13.5px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.input:focus { border-color: var(--tangerine); box-shadow: 0 0 0 3px var(--tangerine-soft); }
+.input::placeholder { color: var(--ink-4); }
+
+.saveBtn {
+  min-width: 72px;
+  height: 38px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 10px;
+  background: var(--ink);
+  color: var(--bg);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s;
+}
+.saveBtn:hover { opacity: 0.88; }

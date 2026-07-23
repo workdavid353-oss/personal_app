@@ -64,7 +64,17 @@ export interface Note {
   title: string | null
   content: string
   color: string
+  category_id: number | null
   sort_order: number
   user_id: number | null
   completed: boolean
+}
+
+export interface NoteCategory {
+  id: number
+  created_at: string
+  name: string
+  color: string
+  sort_order: number
+  user_id: number | null
 }

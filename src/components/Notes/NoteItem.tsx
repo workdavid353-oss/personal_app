@@ -1,32 +1,123 @@
 // src/components/Notes/NoteItem.tsx
 import { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { X, Copy, Check, GripVertical, CheckCircle2, Circle } from 'lucide-react'
+import { X, Copy, Check, GripVertical, CheckCircle2, Circle, Ban, Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import type { Note } from '../../lib/supabase'
-import { NOTE_COLORS } from './useNotes'
+import type { Note, NoteCategory } from '../../lib/supabase'
+import { CATEGORY_COLORS, DEFAULT_NOTE_COLOR } from './colors'
 import styles from './Notes.module.css'
 
-const COLOR_DROPDOWN_WIDTH = 116
+const COLOR_DROPDOWN_WIDTH = 140
+
+type CreateCategory = (name: string, color: string) => Promise<NoteCategory | null>
 
 interface Props {
   note: Note
   index: number
-  onUpdate: (id: number, changes: Partial<Pick<Note, 'content' | 'title' | 'color' | 'completed'>>) => void
+  categories: NoteCategory[]
+  onUpdate: (id: number, changes: Partial<Pick<Note, 'content' | 'title' | 'category_id' | 'completed'>>) => void
+  onCreateCategory: CreateCategory
   onDelete: (id: number) => void
   onDragStart: (index: number) => void
   onDragEnter: (index: number) => void
   onDragEnd: () => void
 }
 
+// ─── CategoryPicker ────────────────────────────────────────────
+// Reused both in the header's floating dropdown and inline in the edit modal.
+interface CategoryPickerProps {
+  categories: NoteCategory[]
+  selectedId: number | null
+  onSelect: (id: number | null) => void
+  onCreate: CreateCategory
+  onAfterSelect?: () => void
+}
+
+function CategoryPicker({ categories, selectedId, onSelect, onCreate, onAfterSelect }: CategoryPickerProps) {
+  const { t } = useTranslation()
+  const [adding, setAdding] = useState(false)
+  const [name, setName] = useState('')
+  const [color, setColor] = useState(CATEGORY_COLORS[0])
+
+  async function handleCreate() {
+    const trimmed = name.trim()
+    if (!trimmed) return
+    const created = await onCreate(trimmed, color)
+    if (created) {
+      onSelect(created.id)
+      setName('')
+      setAdding(false)
+      onAfterSelect?.()
+    }
+  }
+
+  return (
+    <div className={styles.categoryPicker}>
+      <div className={styles.categoryPickerSwatches}>
+        <button
+          className={`${styles.colorOption} ${styles.noColorOption} ${selectedId === null ? styles.activeColor : ''}`}
+          title={t('notes.noCategory')}
+          onClick={() => { onSelect(null); onAfterSelect?.() }}
+        >
+          <Ban size={11} />
+        </button>
+        {categories.map(c => (
+          <button
+            key={c.id}
+            className={`${styles.colorOption} ${selectedId === c.id ? styles.activeColor : ''}`}
+            style={{ backgroundColor: c.color }}
+            title={c.name}
+            onClick={() => { onSelect(c.id); onAfterSelect?.() }}
+          />
+        ))}
+        <button
+          className={`${styles.colorOption} ${styles.addColorOption} ${adding ? styles.activeColor : ''}`}
+          title={t('notes.newCategoryPlaceholder')}
+          onClick={() => setAdding(v => !v)}
+        >
+          <Plus size={11} />
+        </button>
+      </div>
+      {adding && (
+        <div className={styles.categoryPickerAdd}>
+          <div className={styles.categorySwatches}>
+            {CATEGORY_COLORS.map(c => (
+              <button
+                key={c}
+                className={`${styles.colorOption} ${color === c ? styles.activeColor : ''}`}
+                style={{ backgroundColor: c }}
+                onClick={() => setColor(c)}
+              />
+            ))}
+          </div>
+          <input
+            className={styles.categoryPickerInput}
+            placeholder={t('notes.newCategoryPlaceholder')}
+            value={name}
+            onChange={e => setName(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') handleCreate() }}
+            autoFocus
+            dir="auto"
+          />
+          <button className={styles.categoryAddBtn} onClick={handleCreate} disabled={!name.trim()}>
+            <Check size={12} />
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── EditNoteModal ─────────────────────────────────────────────
 interface EditNoteModalProps {
   note: Note
-  onSave: (id: number, changes: Partial<Pick<Note, 'title' | 'content'>>) => void
+  categories: NoteCategory[]
+  onSave: (id: number, changes: Partial<Pick<Note, 'title' | 'content' | 'category_id'>>) => void
+  onCreateCategory: CreateCategory
   onClose: () => void
 }
 
-function EditNoteModal({ note, onSave, onClose }: EditNoteModalProps) {
+function EditNoteModal({ note, categories, onSave, onCreateCategory, onClose }: EditNoteModalProps) {
   const { t } = useTranslation()
   const [title, setTitle] = useState(note.title ?? '')
   const [content, setContent] = useState(note.content)
@@ -66,6 +157,17 @@ function EditNoteModal({ note, onSave, onClose }: EditNoteModalProps) {
             rows={8}
             dir="auto"
           />
+          {!note.completed && (
+            <div className={styles.modalField}>
+              <span className={styles.modalFieldLabel}>{t('notes.category')}</span>
+              <CategoryPicker
+                categories={categories}
+                selectedId={note.category_id}
+                onSelect={id => onSave(note.id, { category_id: id })}
+                onCreate={onCreateCategory}
+              />
+            </div>
+          )}
         </div>
 
         <div className={styles.modalActions}>
@@ -81,11 +183,13 @@ function EditNoteModal({ note, onSave, onClose }: EditNoteModalProps) {
 }
 
 export default function NoteItem({
-  note, index, onUpdate, onDelete, onDragStart, onDragEnter, onDragEnd,
+  note, index, categories, onUpdate, onCreateCategory, onDelete, onDragStart, onDragEnter, onDragEnd,
 }: Props) {
   const { t } = useTranslation()
   const [copied, setCopied] = useState(false)
   const [showColors, setShowColors] = useState(false)
+  const category = categories.find(c => c.id === note.category_id) ?? null
+  const noteColor = category?.color ?? DEFAULT_NOTE_COLOR
   const [editing, setEditing] = useState(false)
   const [colorCoords, setColorCoords] = useState({ top: 0, left: 0 })
   const colorDotRef = useRef<HTMLButtonElement>(null)
@@ -136,7 +240,7 @@ export default function NoteItem({
   return (
     <div
       className={`${styles.noteItem} ${note.completed ? styles.noteCompleted : ''}`}
-      style={{ backgroundColor: note.color }}
+      style={{ backgroundColor: noteColor }}
       draggable={!note.completed}
       onDragStart={() => !note.completed && onDragStart(index)}
       onDragEnter={() => !note.completed && onDragEnter(index)}
@@ -157,15 +261,15 @@ export default function NoteItem({
             {note.completed ? <CheckCircle2 size={14} /> : <Circle size={14} />}
           </button>
 
-          {/* Color dot — only when not completed */}
+          {/* Category dot — only when not completed */}
           {!note.completed && (
             <>
               <button
                 ref={colorDotRef}
                 className={styles.colorDot}
-                style={{ backgroundColor: note.color }}
+                style={{ backgroundColor: noteColor }}
                 onClick={() => setShowColors(v => !v)}
-                title={t('notes.changeColor')}
+                title={category ? category.name : t('notes.noCategory')}
               />
               {showColors && createPortal(
                 <div
@@ -173,14 +277,13 @@ export default function NoteItem({
                   className={styles.colorDropdown}
                   style={{ position: 'fixed', top: colorCoords.top, left: colorCoords.left }}
                 >
-                  {NOTE_COLORS.map(c => (
-                    <button
-                      key={c}
-                      className={`${styles.colorOption} ${note.color === c ? styles.activeColor : ''}`}
-                      style={{ backgroundColor: c }}
-                      onClick={() => { onUpdate(note.id, { color: c }); setShowColors(false) }}
-                    />
-                  ))}
+                  <CategoryPicker
+                    categories={categories}
+                    selectedId={note.category_id}
+                    onSelect={id => onUpdate(note.id, { category_id: id })}
+                    onCreate={onCreateCategory}
+                    onAfterSelect={() => setShowColors(false)}
+                  />
                 </div>,
                 document.body
               )}
@@ -230,7 +333,9 @@ export default function NoteItem({
       {editing && (
         <EditNoteModal
           note={note}
+          categories={categories}
           onSave={onUpdate}
+          onCreateCategory={onCreateCategory}
           onClose={() => setEditing(false)}
         />
       )}

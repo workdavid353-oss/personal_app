@@ -3,16 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../../lib/supabase'
 import type { Note } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
-
-export const NOTE_COLORS = [
-  '#fef9c3', // yellow
-  '#dcfce7', // green
-  '#dbeafe', // blue
-  '#fce7f3', // pink
-  '#ede9fe', // purple
-  '#ffedd5', // orange
-  '#f1f5f9', // slate
-]
+import { DEFAULT_NOTE_COLOR } from './colors'
 
 export function useNotes() {
   const { user } = useAuth()
@@ -36,8 +27,7 @@ export function useNotes() {
   useEffect(() => { fetchNotes() }, [fetchNotes])
 
   // ─── Create ───────────────────────────────────────────────────────────────
-  const addNote = useCallback(async () => {
-    const colorIndex = Math.floor(Math.random() * NOTE_COLORS.length)
+  const addNote = useCallback(async (categoryId: number | null = null) => {
     const maxOrder = notes.reduce((m, n) => Math.max(m, n.sort_order), 0)
 
     const { data, error } = await supabase
@@ -45,7 +35,8 @@ export function useNotes() {
       .insert({
         content: '',
         title: null,
-        color: NOTE_COLORS[colorIndex],
+        color: DEFAULT_NOTE_COLOR,
+        category_id: categoryId,
         sort_order: maxOrder + 1,
         user_id: user?.id ?? null,
       })
@@ -54,11 +45,11 @@ export function useNotes() {
 
     if (error) setError(error.message)
     else setNotes(prev => [...prev, data as Note])
-  }, [notes])
+  }, [notes, user])
 
-  // ─── Update content / title / color / completed ──────────────────────────
+  // ─── Update content / title / category / completed ────────────────────────
   const updateNote = useCallback(
-    async (id: number, changes: Partial<Pick<Note, 'content' | 'title' | 'color' | 'completed'>>) => {
+    async (id: number, changes: Partial<Pick<Note, 'content' | 'title' | 'category_id' | 'completed'>>) => {
       setNotes(prev => prev.map(n => (n.id === id ? { ...n, ...changes } : n)))
       const { error } = await supabase.from('table_notes').update(changes).eq('id', id)
       if (error) setError(error.message)

@@ -99,11 +99,7 @@
 }
 .chip:hover { color: var(--ink); border-color: var(--ink-4); }
 .chipIcon { width: 32px; padding: 0; justify-content: center; }
-.chipDanger:hover {
-  color: oklch(60% 0.18 25);
-  border-color: var(--coral);
-  background: var(--coral-soft);
-}
+.chipActive { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 
 /* ─── Body / grid ─── */
 .body {

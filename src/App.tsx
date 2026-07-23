@@ -3,7 +3,7 @@ import type { ReactElement } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, NavLink, Outlet } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ThemeProvider, useTheme } from './context/ThemeContext'
-import { AuthProvider, useAuth } from './context/AuthContext'
+import { AuthProvider } from './context/AuthContext'
 import { LangProvider, useLang } from './context/LangContext'
 import { WidgetSettingsProvider, useWidgetSettings } from './context/WidgetSettingsContext'
 import type { WidgetKey, ColKey, WidgetLayout } from './context/WidgetSettingsContext'
@@ -15,8 +15,9 @@ import Todos from './components/todos/Todos'
 import News from './components/News/News'
 import Weather from './components/Weather/Weather'
 import LoginPage from './pages/LoginPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 import ProtectedRoute from './components/ProtectedRoute'
-import { LogOut, Sun, Moon, ChevronDown } from 'lucide-react'
+import { Sun, Moon, ChevronDown, Settings } from 'lucide-react'
 import styles from './App.module.css'
 import Stocks from './components/Stocks/Stocks'
 import NewsDigest from './components/NewsDigest/NewsDigest'
@@ -24,6 +25,7 @@ import BankRates from './components/BankRates/BankRates'
 import WikiWidget from './components/WikiWidget/WikiWidget'
 import SpanishReader from './components/SpanishReader/SpanishReader'
 import GoldItemsPage from './pages/GoldItemsPage'
+import SettingsPage from './pages/SettingsPage'
 
 // ─── Toast context / helper ───────────────────────────────────
 interface ToastProps { message: string | null }
@@ -34,7 +36,6 @@ function Toast({ message }: ToastProps) {
 
 // ─── Shared app layout ────────────────────────────────────────
 function AppLayout() {
-  const { user, signOut } = useAuth()
   const { t } = useTranslation()
   const { lang, toggleLang } = useLang()
   const { theme, toggle: toggleTheme } = useTheme()
@@ -85,15 +86,13 @@ function AppLayout() {
               >
                 {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
               </button>
-              {user && (
-                <button
-                  className={`${styles.chip} ${styles.chipIcon} ${styles.chipDanger}`}
-                  onClick={signOut}
-                  title={t('app.logout')}
-                >
-                  <LogOut size={14} />
-                </button>
-              )}
+              <NavLink
+                to="/settings"
+                className={({ isActive }) => `${styles.chip} ${styles.chipIcon} ${isActive ? styles.chipActive : ''}`}
+                title={t('settings.title')}
+              >
+                <Settings size={14} />
+              </NavLink>
             </div>
           </header>
 
@@ -228,6 +227,7 @@ export default function App() {
               <WidgetSettingsProvider>
                 <Routes>
                   <Route path="/login" element={<LoginPage />} />
+                  <Route path="/reset-password" element={<ResetPasswordPage />} />
                   <Route
                     element={
                       <ProtectedRoute>
@@ -237,6 +237,7 @@ export default function App() {
                   >
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/gold-items" element={<GoldItemsPage />} />
+                    <Route path="/settings" element={<SettingsPage />} />
                   </Route>
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

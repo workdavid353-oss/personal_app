@@ -280,9 +280,6 @@
 }
 .collapsedLink:hover { background: var(--surface-2); }
 
-/* ─── Widget settings ─── */
-.widgetSettingsWrap { padding: 8px 16px 12px; }
-
 /* ─── Footer ─── */
 .sidebarFoot {
   padding: 14px 20px 18px;
