@@ -43,6 +43,24 @@ interface SavedLocation {
 
 // ─── Constants ───────────────────────────────────────────────
 const API_KEY = import.meta.env.VITE_WEATHER_API_KEY as string
+const HEBREW_RE = new RegExp('[֐-׿]')
+
+// WeatherAPI.com's location search doesn't understand Hebrew place names,
+// so Hebrew queries are geocoded to lat/lon first (which WeatherAPI does accept).
+async function resolveLocationQuery(input: string): Promise<string> {
+  if (!HEBREW_RE.test(input)) return input
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(input)}&format=json&limit=1&accept-language=he`
+    )
+    if (!res.ok) return input
+    const results: { lat: string; lon: string }[] = await res.json()
+    if (results.length === 0) return input
+    return `${results[0].lat},${results[0].lon}`
+  } catch {
+    return input
+  }
+}
 
 // ─── Main Component ───────────────────────────────────────────
 export default function Weather() {
@@ -89,8 +107,9 @@ export default function Weather() {
     setLoading(true)
     setError(null)
     try {
+      const resolvedQuery = await resolveLocationQuery(locationQuery)
       const res = await fetch(
-        `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${encodeURIComponent(locationQuery)}&days=5&lang=he`
+        `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${encodeURIComponent(resolvedQuery)}&days=5&lang=he`
       )
       if (!res.ok) {
         const err = await res.json()
@@ -98,7 +117,7 @@ export default function Weather() {
       }
       const json: WeatherData = await res.json()
       setData(json)
-      setActiveLocation(locationQuery)
+      setActiveLocation(resolvedQuery)
     } catch (e: any) {
       setError(e.message)
       setData(null)
